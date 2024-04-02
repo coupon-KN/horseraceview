@@ -1,0 +1,62 @@
+.horse-race {
+    position: relative;
+    padding-bottom: 40px;
+
+    .condtions {
+        background-color: #fff5ea;
+    }
+
+    .tbl-race {
+        thead {
+            background-color: #f4f2ec;
+        }
+        tr.passive{
+            display: none;
+        }
+        tr.delete {
+            background-color: #d0d0d0;
+        }
+        th:nth-child(1){width: 20px;}
+        th:nth-child(2){width: 20px;}
+        th:nth-child(3){width: 50px;}
+        th:nth-child(4){width: 50px;}
+        th:nth-child(5){width: auto;}
+    }
+
+    footer {
+        width: 100%;
+        height: 40px;
+        position: fixed;
+        bottom: 0;
+        background-color: #fff5ea;
+    }
+    a.btn-parent {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 20px;
+        margin: auto;
+        width: 64px;
+        height: 29px;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+    .couple-off {
+        background-image: url("/img/couple-horse-off.png");
+    }
+    .couple-on {
+        background-image: url("/img/couple-horse-on.png");
+    }
+
+    div.loading {
+        width: 100%;
+        height: calc(100vh - 100px);
+        position: absolute;
+        top: 0;
+        background-image: url("/img/wait-horse.gif");
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+    
+}
