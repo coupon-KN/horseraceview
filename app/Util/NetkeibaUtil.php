@@ -3,6 +3,7 @@ namespace App\Util;
 use App\Models\FileRaceData;
 use App\Models\ShutsubaInfo;
 use App\Models\FileHorse;
+use App\Models\FileParentHorse;
 use App\Models\RaceHistory;
 use App\Models\ViewRaceData;
 use App\Models\ViewHorseData;
@@ -65,6 +66,7 @@ class NetkeibaUtil
             $shutsuba->name = $row["name"];
             $shutsuba->age = $row["age"];
             $shutsuba->jockey = $row["jockey"];
+            $shutsuba->isCancel = $row["isCancel"];
             $race->shutsubaArray[] = $shutsuba;
         }
         return $race;
@@ -182,6 +184,7 @@ class NetkeibaUtil
             $horse->name = $item->name;
             $horse->age = $item->age;
             $horse->jockey = $item->jockey;
+            $horse->isCancel = $item->isCancel;
             // 馬情報
             if(NetkeibaUtil::existsHorseData($item->horseId)){
                 $fileHorse = NetkeibaUtil::getHorseData($item->horseId);
@@ -262,7 +265,7 @@ class NetkeibaUtil
             $raceFile->raceId = $raceId;
 
             // レース名
-            $raceFile->name = trim($doc->find("#page div.RaceColumn01 div.RaceName")->text());
+            $raceFile->name = trim($doc->find("#page div.RaceColumn01 h1.RaceName")->text());
 
             // レース情報
             $strRace = $doc->find("#page div.RaceColumn01 div.RaceData01")->text();
@@ -310,6 +313,11 @@ class NetkeibaUtil
                 $info->umaban = $doc->find($selector . " td:eq(1)")->text();
                 $info->age = $doc->find($selector . " td.Barei")->text();
                 $info->jockey = $doc->find($selector . " td.Jockey a")->text();
+                $info->isCancel = 0;
+                $className = $doc->find($selector)->attr("class");
+                if(false !== strpos($className, "Cancel")){
+                    $info->isCancel = 1;
+                }
 
                 $raceFile->shutsubaArray[] = $info;
             }
@@ -428,60 +436,60 @@ class NetkeibaUtil
             if(count($bloodIdArr) > 0){
                 $parent = NetkeibaUtil::getParentRecode($bloodIdArr[0]);
                 if(!is_null($parent)){
-                    $horseFile->dadName = $parent["name"];
-                    $horseFile->dadRecode = $parent["recode"];
-                    $horseFile->dadWinRate = $parent["winRate"];
-                    $horseFile->dadPodiumRate = $parent["podiumRate"];
+                    $horseFile->dadName = $parent->name;
+                    $horseFile->dadRecode = $parent->recode;
+                    $horseFile->dadWinRate = $parent->winRate;
+                    $horseFile->dadPodiumRate = $parent->podiumRate;
                 }
             }
             // 父方の祖父の情報
             if(count($bloodIdArr) > 1){
                 $parent = NetkeibaUtil::getParentRecode($bloodIdArr[1]);
                 if(!is_null($parent)){
-                    $horseFile->dadSohuName = $parent["name"];
-                    $horseFile->dadSohuRecode = $parent["recode"];
-                    $horseFile->dadSohuWinRate = $parent["winRate"];
-                    $horseFile->dadSohuPodiumRate = $parent["podiumRate"];
+                    $horseFile->dadSohuName = $parent->name;
+                    $horseFile->dadSohuRecode = $parent->recode;
+                    $horseFile->dadSohuWinRate = $parent->winRate;
+                    $horseFile->dadSohuPodiumRate = $parent->podiumRate;
                 }
             }
             // 父方の祖母の情報
             if(count($bloodIdArr) > 2){
                 $parent = NetkeibaUtil::getParentRecode($bloodIdArr[2]);
                 if(!is_null($parent)){
-                    $horseFile->dadSoboName = $parent["name"];
-                    $horseFile->dadSoboRecode = $parent["recode"];
-                    $horseFile->dadSoboWinRate = $parent["winRate"];
-                    $horseFile->dadSoboPodiumRate = $parent["podiumRate"];
+                    $horseFile->dadSoboName = $parent->name;
+                    $horseFile->dadSoboRecode = $parent->recode;
+                    $horseFile->dadSoboWinRate = $parent->winRate;
+                    $horseFile->dadSoboPodiumRate = $parent->podiumRate;
                 }
             }
             // 母の情報
             if(count($bloodIdArr) > 3){
                 $parent = NetkeibaUtil::getParentRecode($bloodIdArr[3]);
                 if(!is_null($parent)){
-                    $horseFile->mamName = $parent["name"];
-                    $horseFile->mamRecode = $parent["recode"];
-                    $horseFile->mamWinRate = $parent["winRate"];
-                    $horseFile->mamPodiumRate = $parent["podiumRate"];
+                    $horseFile->mamName = $parent->name;
+                    $horseFile->mamRecode = $parent->recode;
+                    $horseFile->mamWinRate = $parent->winRate;
+                    $horseFile->mamPodiumRate = $parent->podiumRate;
                 }
             }
             // 母方の祖父の情報
             if(count($bloodIdArr) > 4){
                 $parent = NetkeibaUtil::getParentRecode($bloodIdArr[4]);
                 if(!is_null($parent)){
-                    $horseFile->mamSohuName = $parent["name"];
-                    $horseFile->mamSohuRecode = $parent["recode"];
-                    $horseFile->mamSohuWinRate = $parent["winRate"];
-                    $horseFile->mamSohuPodiumRate = $parent["podiumRate"];
+                    $horseFile->mamSohuName = $parent->name;
+                    $horseFile->mamSohuRecode = $parent->recode;
+                    $horseFile->mamSohuWinRate = $parent->winRate;
+                    $horseFile->mamSohuPodiumRate = $parent->podiumRate;
                 }
             }
             // 母方の祖母の情報
             if(count($bloodIdArr) > 5){
                 $parent = NetkeibaUtil::getParentRecode($bloodIdArr[5]);
                 if(!is_null($parent)){
-                    $horseFile->mamSoboName = $parent["name"];
-                    $horseFile->mamSoboRecode = $parent["recode"];
-                    $horseFile->mamSoboWinRate = $parent["winRate"];
-                    $horseFile->mamSoboPodiumRate = $parent["podiumRate"];
+                    $horseFile->mamSoboName = $parent->name;
+                    $horseFile->mamSoboRecode = $parent->recode;
+                    $horseFile->mamSoboWinRate = $parent->winRate;
+                    $horseFile->mamSoboPodiumRate = $parent->podiumRate;
                 }
             }
 
@@ -499,46 +507,62 @@ class NetkeibaUtil
     /**
      * 親の成績を取得
      */
-    private static function getParentRecode($horseId){
-        $rtnData = null;
+    private static function getParentRecode($horseId) : FileParentHorse
+    {
+        $rtnObj = new FileParentHorse();
 
         try {
-            // htmlを読み込み
-            $html = file_get_contents("https://db.netkeiba.com/horse/" . $horseId);
-            if(!$html){
-                return $rtnData;
-            }
-            $doc = phpQuery::newDocument($html);
-            $rtnData["name"] = $doc->find('div.horse_title h1')->text();
-            // 通算成績
-            $loop = count($doc->find('div.db_main_deta table.db_prof_table tr')->elements);
-            for($j=0; $j<$loop; $j++){
-                $th = $doc->find("div.db_main_deta table.db_prof_table tr:eq(". $j . ") th")->text();
-                if($th == "通算成績"){
-                    $strWork = $doc->find("div.db_main_deta table.db_prof_table tr:eq(". $j . ") td a")->text();
-                    $rankArr = explode("-",$strWork);
-                    $rank1 = intval($rankArr[0]);
-                    $rank2 = intval($rankArr[1]);
-                    $rank3 = intval($rankArr[2]);
-                    $rankEtc = intval($rankArr[3]);
-                    $total = $rank1 + $rank2 + $rank3 + $rankEtc;
-                    // 成績
-                    $rtnData["recode"] = sprintf("[%d-%d-%d-%d]", $rank1, $rank2, $rank3, $rankEtc);
-                    if($total > 0){
-                        $rtnData["winRate"] = round($rank1 / $total * 100);
-                        $rtnData["podiumRate"] = round(($rank1 + $rank2 + $rank3) / $total * 100);
-                    }else{
-                        $rtnData["winRate"] = 0;
-                        $rtnData["podiumRate"] = 0;
-                    }
-                    break;
+            // ファイルから取得
+            if(Storage::disk('public')->exists("parent/" . $horseId . ".json")){
+                $contents = Storage::disk('public')->get("parent/" . $horseId . ".json");
+                $json = json_decode($contents, true);
+                $rtnObj->horseId = $json["horseId"];
+                $rtnObj->name = $json["name"];
+                $rtnObj->recode = $json["recode"];
+                $rtnObj->winRate = $json["winRate"];
+                $rtnObj->podiumRate = $json["podiumRate"];
+            }else{
+                // htmlから取得
+                $html = file_get_contents("https://db.netkeiba.com/horse/" . $horseId);
+                if(!$html){
+                    return null;
                 }
+                $doc = phpQuery::newDocument($html);
+                $rtnObj->horseId = $horseId;
+                $rtnObj->name = $doc->find('div.horse_title h1')->text();
+                // 通算成績
+                $loop = count($doc->find('div.db_main_deta table.db_prof_table tr')->elements);
+                for($j=0; $j<$loop; $j++){
+                    $th = $doc->find("div.db_main_deta table.db_prof_table tr:eq(". $j . ") th")->text();
+                    if($th == "通算成績"){
+                        $strWork = $doc->find("div.db_main_deta table.db_prof_table tr:eq(". $j . ") td a")->text();
+                        $rankArr = explode("-",$strWork);
+                        $rank1 = intval($rankArr[0]);
+                        $rank2 = intval($rankArr[1]);
+                        $rank3 = intval($rankArr[2]);
+                        $rankEtc = intval($rankArr[3]);
+                        $total = $rank1 + $rank2 + $rank3 + $rankEtc;
+                        // 成績
+                        $rtnObj->recode = sprintf("[%d-%d-%d-%d]", $rank1, $rank2, $rank3, $rankEtc);
+                        if($total > 0){
+                            $rtnObj->winRate = round($rank1 / $total * 100);
+                            $rtnObj->podiumRate = round(($rank1 + $rank2 + $rank3) / $total * 100);
+                        }else{
+                            $rtnObj->winRate = 0;
+                            $rtnObj->podiumRate = 0;
+                        }
+                        break;
+                    }
+                }
+                // 書き込み
+                $contents = json_encode($rtnObj, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+                Storage::disk('public')->put("parent/" . $horseId . ".json", $contents);
             }
         }
         catch(\Exception $err){
             return null;
         }
-        return $rtnData;
+        return $rtnObj;
     }
 
 

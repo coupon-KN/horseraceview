@@ -10,8 +10,6 @@ import axios, { AxiosResponse }  from "axios";
 
 //const SCHDULE_URL = "http://127.0.0.1:8000/api/horserace/schdule";
 //const HORSE_RACE_URL = "http://127.0.0.1:8000/api/horserace/racedata";
-//const SCHDULE_URL = "https://horserace-viewer.sakuraweb.com/api/horserace/schdule";
-//const HORSE_RACE_URL = "https://horserace-viewer.sakuraweb.com/api/horserace/racedata";
 const SCHDULE_URL = "https://chestnut-rice.sakuraweb.com/api/horserace/schdule";
 const HORSE_RACE_URL = "https://chestnut-rice.sakuraweb.com/api/horserace/racedata";
 
@@ -198,26 +196,44 @@ const HorseRacePage = () => {
                     <tbody>
                         {raceData.horseArray.map((h,index) =>
                         <>
-                            <tr key={index} className={markArray[index] == "消" ? "delete" : "normal"}>
-                                <td className={"text-center fs12 waku"+h.waku}>{h.waku}</td>
-                                <td className="text-center fs12">{h.umaban}</td>
-                                <td className="text-center fs-1" data-index={index} onClick={(ev) => {MarkCellClickHandle(ev,"p")}}>{paddockArray[index]}</td>
-                                <td className="text-center fs-1" data-index={index} onClick={(ev) => {MarkCellClickHandle(ev,"m")}}>{markArray[index]}</td>
-                                <td className="ps-1 pe-1" onClick={(ev) => {NameCellClickHandle(ev)}}>
-                                    <div className="d-inline-block w-75">{h.name}</div>
-                                    <div className="d-inline-block w-25 fs12">{h.age}</div>
-                                    <div className="d-inline-block w-100 fs12">
-                                        <span>{h.jockey}</span>
-                                        <span className="float-end">{h.recode}&nbsp;&nbsp;勝率{h.winRate}%&nbsp;&nbsp;複勝率{h.podiumRate}%</span>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr key={index + 100} className="passive">
-                                <td colSpan={5} className="ps-2 bg-light">
-                                    {isParent ? <ParentHorseCell horseData={h} /> : ""}
-                                    <RaceHistoryTable history={h.recodeArray.slice(0,10)} />
-                                </td>
-                            </tr>
+                            {h.isCancel ? 
+                                <tr key={index} className="delete">
+                                    <td className={"text-center fs12 waku"+h.waku}>{h.waku}</td>
+                                    <td className="text-center fs12">{h.umaban}</td>
+                                    <td colSpan={2} className="text-center fs-1" data-index={index}>除外</td>
+                                    <td className="ps-1 pe-1" onClick={(ev) => {NameCellClickHandle(ev)}}>
+                                        <div className="d-inline-block w-75">{h.name}</div>
+                                        <div className="d-inline-block w-25 fs12">{h.age}</div>
+                                        <div className="d-inline-block w-100 fs12">
+                                            <span>{h.jockey}</span>
+                                            <span className="float-end">{h.recode}&nbsp;&nbsp;勝{h.winRate}%&nbsp;&nbsp;複勝{h.podiumRate}%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            :
+                            <>
+                                <tr key={index} className={markArray[index] == "消" ? "delete" : "normal"}>
+                                    <td className={"text-center fs12 waku"+h.waku}>{h.waku}</td>
+                                    <td className="text-center fs12">{h.umaban}</td>
+                                    <td className="text-center fs-1" data-index={index} onClick={(ev) => {MarkCellClickHandle(ev,"p")}}>{paddockArray[index]}</td>
+                                    <td className="text-center fs-1" data-index={index} onClick={(ev) => {MarkCellClickHandle(ev,"m")}}>{markArray[index]}</td>
+                                    <td className="ps-1 pe-1" onClick={(ev) => {NameCellClickHandle(ev)}}>
+                                        <div className="d-inline-block w-75">{h.name}</div>
+                                        <div className="d-inline-block w-25 fs12">{h.age}</div>
+                                        <div className="d-inline-block w-100 fs12">
+                                            <span>{h.jockey}</span>
+                                            <span className="float-end">{h.recode}&nbsp;&nbsp;勝{h.winRate}%&nbsp;&nbsp;複勝{h.podiumRate}%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr key={index + 100} className="passive">
+                                    <td colSpan={5} className="ps-2 bg-light">
+                                        {isParent ? <ParentHorseCell horseData={h} /> : ""}
+                                        <RaceHistoryTable history={h.recodeArray.slice(0,10)} />
+                                    </td>
+                                </tr>
+                            </>
+                            }
                         </>
                         )}
                     </tbody>

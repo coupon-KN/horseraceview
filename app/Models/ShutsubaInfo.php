@@ -27,4 +27,7 @@ class ShutsubaInfo
     /** 騎手 */
     public $jockey;
 
+    /** 除外フラグ */
+    public $isCancel;
+
 }

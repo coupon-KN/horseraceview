@@ -19,6 +19,8 @@ class ViewHorseData
     public $age;
     /** 騎手 */
     public $jockey;
+    /** 除外 */
+    public $isCancel;
     /** 成績 */
     public $recode;
     /** 勝率 */

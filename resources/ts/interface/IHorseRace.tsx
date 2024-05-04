@@ -47,6 +47,8 @@ export interface IViewHorseData {
     age : string;
     /** 騎手 */
     jockey : string;
+    /** 除外フラグ */
+    isCancel : Boolean;
     /** 成績 */
     recode : string;
     /** 勝率 */
