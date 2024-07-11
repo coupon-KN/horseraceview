@@ -3,7 +3,6 @@ namespace App\Util;
 use App\Models\FileRaceData;
 use App\Models\ShutsubaInfo;
 use App\Models\FileHorse;
-use App\Models\FileParentHorse;
 use App\Models\RaceHistory;
 use App\Models\ViewRaceData;
 use App\Models\ViewHorseData;
@@ -50,25 +49,7 @@ class NetkeibaUtil
         $json = json_decode($contents, true);
 
         $race = new FileRaceData();
-        $race->raceId = $json["raceId"];
-        $race->name = $json["name"];
-        $race->startingTime = $json["startingTime"];
-        $race->groundType = $json["groundType"];
-        $race->distance = $json["distance"];
-        $race->direction = $json["direction"];
-        $race->horseCount = $json["horseCount"];
-        foreach($json["shutsubaArray"] as $row) {
-            $shutsuba = new ShutsubaInfo();
-            $shutsuba->horseId = $row["horseId"];
-            $shutsuba->link = $row["link"];
-            $shutsuba->waku = $row["waku"];
-            $shutsuba->umaban = $row["umaban"];
-            $shutsuba->name = $row["name"];
-            $shutsuba->age = $row["age"];
-            $shutsuba->jockey = $row["jockey"];
-            $shutsuba->isCancel = $row["isCancel"];
-            $race->shutsubaArray[] = $shutsuba;
-        }
+        $race->setJsonData($json);
         return $race;
     }
 
@@ -87,67 +68,7 @@ class NetkeibaUtil
         $json = json_decode($contents, true);
 
         $horse = new FileHorse();
-        $horse->horseId = $json["horseId"];
-        $horse->name = $json["name"];
-        $horse->age = $json["age"];
-        $horse->raceTotal = $json["raceTotal"];
-        $horse->rank1Count = $json["rank1Count"];
-        $horse->rank2Count = $json["rank2Count"];
-        $horse->rank3Count = $json["rank3Count"];
-        $horse->rankEtcCount = $json["rankEtcCount"];
-        $horse->dadName = $json["dadName"];
-        $horse->dadRecode = $json["dadRecode"];
-        $horse->dadWinRate = $json["dadWinRate"];
-        $horse->dadPodiumRate = $json["dadPodiumRate"];
-        $horse->dadSohuName = $json["dadSohuName"];
-        $horse->dadSohuRecode = $json["dadSohuRecode"];
-        $horse->dadSohuWinRate = $json["dadSohuWinRate"];
-        $horse->dadSohuPodiumRate = $json["dadSohuPodiumRate"];
-        $horse->dadSoboName = $json["dadSoboName"];
-        $horse->dadSoboRecode = $json["dadSoboRecode"];
-        $horse->dadSoboWinRate = $json["dadSoboWinRate"];
-        $horse->dadSoboPodiumRate = $json["dadSoboPodiumRate"];
-        $horse->mamName = $json["mamName"];
-        $horse->mamRecode = $json["mamRecode"];
-        $horse->mamWinRate = $json["mamWinRate"];
-        $horse->mamPodiumRate = $json["mamPodiumRate"];
-        $horse->mamSohuName = $json["mamSohuName"];
-        $horse->mamSohuRecode = $json["mamSohuRecode"];
-        $horse->mamSohuWinRate = $json["mamSohuWinRate"];
-        $horse->mamSohuPodiumRate = $json["mamSohuPodiumRate"];
-        $horse->mamSoboName = $json["mamSoboName"];
-        $horse->mamSoboRecode = $json["mamSoboRecode"];
-        $horse->mamSoboWinRate = $json["mamSoboWinRate"];
-        $horse->mamSoboPodiumRate = $json["mamSoboPodiumRate"];
-        foreach($json["recodeArray"] as $row) {
-            $history = new RaceHistory();
-            $history->date = $row["date"];
-            $history->baba = $row["baba"];
-            $history->tenki = $row["tenki"];
-            $history->raceNo = $row["raceNo"];
-            $history->raceName = $row["raceName"];
-            $history->horseCount = $row["horseCount"];
-            $history->waku = $row["waku"];
-            $history->umaban = $row["umaban"];
-            $history->odds = $row["odds"];
-            $history->ninki = $row["ninki"];
-            $history->rankNo = $row["rankNo"];
-            $history->jockey = $row["jockey"];
-            $history->kinryo = $row["kinryo"];
-            $history->distance = $row["distance"];
-            $history->groundType = $row["groundType"];
-            $history->groundShortName = config("const.GROUND_SHORT_NAME")[$row["groundType"]];
-            $history->condition = $row["condition"];
-            $history->time = $row["time"];
-            $history->difference = $row["difference"];
-            $history->pointTime = $row["pointTime"];
-            $history->firstPace = $row["firstPace"];
-            $history->latterPace = $row["latterPace"];
-            $history->agari600m = $row["agari600m"];
-            $history->weight = $row["weight"];
-            $history->winHorse = $row["winHorse"];
-            $horse->recodeArray[] = $history;
-        }
+        $horse->setJsonData($json);
         return $horse;
     }
 
@@ -175,7 +96,7 @@ class NetkeibaUtil
         $view->raceInfo .= $raceFile->distance . "m";
         $view->raceInfo .= "("  . config("const.DIRECTION_NAME")[$raceFile->direction] . ") ";
         $view->raceInfo .= $raceFile->horseCount . "頭";
-        // 競走馬情報
+        // 出馬情報
         foreach($raceFile->shutsubaArray As $item)
         {
             $horse = new ViewHorseData();
@@ -185,7 +106,7 @@ class NetkeibaUtil
             $horse->age = $item->age;
             $horse->jockey = $item->jockey;
             $horse->isCancel = $item->isCancel;
-            // 馬情報
+            // 競走馬情報
             if(NetkeibaUtil::existsHorseData($item->horseId)){
                 $fileHorse = NetkeibaUtil::getHorseData($item->horseId);
                 // 成績
@@ -199,36 +120,18 @@ class NetkeibaUtil
                 }
                 // 履歴
                 if(count($fileHorse->recodeArray) > 0){
-                    //$horse->recodeArray = array_splice($fileHorse->recodeArray, 0, 5);
-                    $horse->recodeArray = $fileHorse->recodeArray;
+                    $horse->recodeArray = array_splice($fileHorse->recodeArray, 0, 10);
+                    //$horse->recodeArray = $fileHorse->recodeArray;
                 }else{
                     $horse->recodeArray = [];
                 }
                 // 親の情報
-                $horse->dadName = $fileHorse->dadName;
-                $horse->dadRecode = $fileHorse->dadRecode;
-                $horse->dadWinRate = $fileHorse->dadWinRate;
-                $horse->dadPodiumRate = $fileHorse->dadPodiumRate;
-                $horse->dadSohuName = $fileHorse->dadSohuName;
-                $horse->dadSohuRecode = $fileHorse->dadSohuRecode;
-                $horse->dadSohuWinRate = $fileHorse->dadSohuWinRate;
-                $horse->dadSohuPodiumRate = $fileHorse->dadSohuPodiumRate;
-                $horse->dadSoboName = $fileHorse->dadSoboName;
-                $horse->dadSoboRecode = $fileHorse->dadSoboRecode;
-                $horse->dadSoboWinRate = $fileHorse->dadSoboWinRate;
-                $horse->dadSoboPodiumRate = $fileHorse->dadSoboPodiumRate;
-                $horse->mamName = $fileHorse->mamName;
-                $horse->mamRecode = $fileHorse->mamRecode;
-                $horse->mamWinRate = $fileHorse->mamWinRate;
-                $horse->mamPodiumRate = $fileHorse->mamPodiumRate;
-                $horse->mamSohuName = $fileHorse->mamSohuName;
-                $horse->mamSohuRecode = $fileHorse->mamSohuRecode;
-                $horse->mamSohuWinRate = $fileHorse->mamSohuWinRate;
-                $horse->mamSohuPodiumRate = $fileHorse->mamSohuPodiumRate;
-                $horse->mamSoboName = $fileHorse->mamSoboName;
-                $horse->mamSoboRecode = $fileHorse->mamSoboRecode;
-                $horse->mamSoboWinRate = $fileHorse->mamSoboWinRate;
-                $horse->mamSoboPodiumRate = $fileHorse->mamSoboPodiumRate;
+                $horse->dad = $fileHorse->dad;
+                $horse->dadSohu = $fileHorse->dadSohu;
+                $horse->dadSobo = $fileHorse->dadSobo;
+                $horse->mam = $fileHorse->mam;
+                $horse->mamSohu = $fileHorse->mamSohu;
+                $horse->mamSobo = $fileHorse->mamSobo;
 
             }else{
                 $horse->recode = 0;
@@ -260,20 +163,18 @@ class NetkeibaUtil
         $raceFile = new FileRaceData();
         try {
             $doc = phpQuery::newDocument($html);
+            $raceColumn01 = $doc->find("#page div.RaceColumn01")->getDocument();
 
             // レースID
             $raceFile->raceId = $raceId;
-
             // レース名
-            $raceFile->name = trim($doc->find("#page div.RaceColumn01 h1.RaceName")->text());
-
+            $raceFile->name = trim($raceColumn01->find("h1.RaceName")->text());
             // レース情報
-            $strRace = $doc->find("#page div.RaceColumn01 div.RaceData01")->text();
+            $strRace = $raceColumn01->find("div.RaceData01")->text();
             $strRace = preg_replace('/　|\s+/', '', $strRace);
             $raceArr = explode("/", $strRace);
             // 発送時刻
             $raceFile->startingTime = str_replace("発走", "", $raceArr[0]);
-
             // 種類
             $type = mb_substr(preg_replace('/　|\s+/', '', $raceArr[1]), 0, 1);
             if($type == "芝"){
@@ -293,28 +194,26 @@ class NetkeibaUtil
             }
         
             // 出馬情報を取得
-            $horseCnt = count($doc->find("div.RaceColumn02 div.RaceTableArea tr.HorseList")->elements);
+            $raceTable = $doc->find("div.RaceColumn02 div.RaceTableArea table")->getDocument();
+            $horseCnt = count($raceTable->find("tr.HorseList")->elements);
             // 頭数
             $raceFile->horseCount = $horseCnt;
 
             for($i=0; $i<$horseCnt; $i++){
-                $selector = "div.RaceColumn02 div.RaceTableArea tr.HorseList:eq(". $i . ")";
-
                 $info = new ShutsubaInfo();
-
-                $link = $doc->find($selector . " td.HorseInfo span.HorseName a")->attr("href");
-                $title = $doc->find($selector . " td.HorseInfo span.HorseName a")->attr("title");
+                $link = $raceTable->find("tr.HorseList:eq(" . $i . ") td.HorseInfo span.HorseName a")->attr("href");
+                $title = $raceTable->find("tr.HorseList:eq(" . $i . ") td.HorseInfo span.HorseName a")->attr("title");
                 $linkArr = explode("/", $link);
                 $info->horseId = end($linkArr);
                 $info->link = $link;
                 $info->name = $title;
 
-                $info->waku = $doc->find($selector . " td:eq(0) span")->text();
-                $info->umaban = $doc->find($selector . " td:eq(1)")->text();
-                $info->age = $doc->find($selector . " td.Barei")->text();
-                $info->jockey = $doc->find($selector . " td.Jockey a")->text();
+                $info->waku = $raceTable->find("tr.HorseList:eq(" . $i . ") td:eq(0) span")->text();
+                $info->umaban = $raceTable->find("tr.HorseList:eq(" . $i . ") td:eq(1)")->text();
+                $info->age = $raceTable->find("tr.HorseList:eq(" . $i . ") td.Barei")->text();
+                $info->jockey = $raceTable->find("tr.HorseList:eq(" . $i . ") td.Jockey a")->text();
                 $info->isCancel = 0;
-                $className = $doc->find($selector)->attr("class");
+                $className = $raceTable->find("tr.HorseList:eq(" . $i . ")")->attr("class");
                 if(false !== strpos($className, "Cancel")){
                     $info->isCancel = 1;
                 }
@@ -356,11 +255,12 @@ class NetkeibaUtil
             $ageArr = explode("　", $age);
             $horseFile->age = $ageArr[1];
             // 通算成績
-            $loop = count($doc->find('div.db_main_deta table.db_prof_table tr')->elements);
+            $profTable = $doc->find('div.db_main_deta table.db_prof_table')->getDocument();
+            $loop = count($profTable->find('tr')->elements);
             for($i=0; $i<$loop; $i++){
-                $th = $doc->find("div.db_main_deta table.db_prof_table tr:eq(". $i . ") th")->text();
+                $th = $profTable->find("tr:eq(". $i . ") th")->text();
                 if($th == "通算成績"){
-                    $strWork = $doc->find("div.db_main_deta table.db_prof_table tr:eq(". $i . ") td a")->text();
+                    $strWork = $profTable->find("tr:eq(". $i . ") td a")->text();
                     $rankArr = explode("-",$strWork);
                     // 1位数
                     $horseFile->rank1Count = intval($rankArr[0]);
@@ -387,23 +287,23 @@ class NetkeibaUtil
             // 競走成績
             $loop = count($doc->find('table.db_h_race_results tbody tr')->elements);
             for($i=0; $i<$loop; $i++){
-                $selector = "table.db_h_race_results tbody tr:eq(". $i . ")";
+                $row = $doc->find("div.db_main_race div.db_main_deta table tbody tr:eq(" . $i . ")");
 
                 $history = new RaceHistory();
-                $history->date = $doc->find($selector . " td:eq(0) a")->text();
-                $history->baba = $doc->find($selector . " td:eq(1) a")->text();
-                $history->tenki = $doc->find($selector . " td:eq(2)")->text();
-                $history->raceNo = intval($doc->find($selector . " td:eq(3)")->text());
-                $history->raceName = $doc->find($selector . " td:eq(4) a")->text();
-                $history->horseCount = intval($doc->find($selector . " td:eq(6)")->text());
-                $history->waku = intval($doc->find($selector . " td:eq(7)")->text());
-                $history->umaban = intval($doc->find($selector . " td:eq(8)")->text());
-                $history->odds = $doc->find($selector . " td:eq(9)")->text();
-                $history->ninki = intval($doc->find($selector . " td:eq(10)")->text());
-                $history->rankNo = $doc->find($selector . " td:eq(11)")->text();
-                $history->jockey = $doc->find($selector . " td:eq(12) a")->text();
-                $history->kinryo = intval($doc->find($selector . " td:eq(13)")->text());
-                $strWork = $doc->find($selector . " td:eq(14)")->text();
+                $history->date = $row->find("td:eq(0) a")->text();
+                $history->baba = $row->find("td:eq(1) a")->text();
+                $history->tenki = $row->find("td:eq(2)")->text();
+                $history->raceNo = intval($row->find("td:eq(3)")->text());
+                $history->raceName = $row->find("td:eq(4) a")->text();
+                $history->horseCount = intval($row->find("td:eq(6)")->text());
+                $history->waku = intval($row->find("td:eq(7)")->text());
+                $history->umaban = intval($row->find("td:eq(8)")->text());
+                $history->odds = $row->find("td:eq(9)")->text();
+                $history->ninki = intval($row->find("td:eq(10)")->text());
+                $history->rankNo = $row->find("td:eq(11)")->text();
+                $history->jockey = $row->find("td:eq(12) a")->text();
+                $history->kinryo = intval($row->find("td:eq(13)")->text());
+                $strWork = $row->find("td:eq(14)")->text();
                 $history->distance = intval(preg_replace('/[^0-9]/', '', $strWork));
                 if(false !== strpos($strWork, "芝")){
                     $history->groundType = 1;
@@ -412,11 +312,11 @@ class NetkeibaUtil
                 }else{
                     $history->groundType = 3;
                 }
-                $history->condition = $doc->find($selector . " td:eq(15)")->text();
-                $history->time = $doc->find($selector . " td:eq(17)")->text();
-                $history->difference = $doc->find($selector . " td:eq(18)")->text();
-                $history->pointTime = $doc->find($selector . " td:eq(20)")->text();
-                $strWork = $doc->find($selector . " td:eq(21)")->text();
+                $history->condition = $row->find("td:eq(15)")->text();
+                $history->time = $row->find("td:eq(17)")->text();
+                $history->difference = $row->find("td:eq(18)")->text();
+                $history->pointTime = $row->find("td:eq(20)")->text();
+                $strWork = $row->find("td:eq(21)")->text();
                 $strArr = explode("-", $strWork);
                 if(count($strArr) >= 2){
                     $history->firstPace = $strArr[0];
@@ -425,72 +325,48 @@ class NetkeibaUtil
                     $history->firstPace = "";
                     $history->latterPace = "";
                 }
-                $history->agari600m = $doc->find($selector . " td:eq(22)")->text();
-                $history->weight = $doc->find($selector . " td:eq(23)")->text();
-                $history->winHorse = $doc->find($selector . " td:eq(26) a")->text();
+                $history->agari600m = $row->find("td:eq(22)")->text();
+                $history->weight = $row->find("td:eq(23)")->text();
+                $history->winHorse = $row->find("td:eq(26) a")->text();
+
+                // ペース区分を計算
+                if($history->firstPace != "" && $history->latterPace != ""){
+                    $paceDiff = (double)$history->firstPace - (double)$history->latterPace;
+                    if($paceDiff <= 1.0 && $paceDiff >= -1.0){
+                        $history->paceKbn = "M";
+                    }elseif($paceDiff > 1.0){
+                        $history->paceKbn = "S";
+                    }else{
+                        $history->paceKbn = "H";
+                    }
+                }
 
                 $horseFile->recodeArray[] = $history;
             }
 
             // 父の情報
             if(count($bloodIdArr) > 0){
-                $parent = NetkeibaUtil::getParentRecode($bloodIdArr[0]);
-                if(!is_null($parent)){
-                    $horseFile->dadName = $parent->name;
-                    $horseFile->dadRecode = $parent->recode;
-                    $horseFile->dadWinRate = $parent->winRate;
-                    $horseFile->dadPodiumRate = $parent->podiumRate;
-                }
+                $horseFile->dad = NetkeibaParentHorseUtil::getInstance()->getHorseData($bloodIdArr[0]);
             }
             // 父方の祖父の情報
             if(count($bloodIdArr) > 1){
-                $parent = NetkeibaUtil::getParentRecode($bloodIdArr[1]);
-                if(!is_null($parent)){
-                    $horseFile->dadSohuName = $parent->name;
-                    $horseFile->dadSohuRecode = $parent->recode;
-                    $horseFile->dadSohuWinRate = $parent->winRate;
-                    $horseFile->dadSohuPodiumRate = $parent->podiumRate;
-                }
+                $horseFile->dadSohu = NetkeibaParentHorseUtil::getInstance()->getHorseData($bloodIdArr[1]);
             }
             // 父方の祖母の情報
             if(count($bloodIdArr) > 2){
-                $parent = NetkeibaUtil::getParentRecode($bloodIdArr[2]);
-                if(!is_null($parent)){
-                    $horseFile->dadSoboName = $parent->name;
-                    $horseFile->dadSoboRecode = $parent->recode;
-                    $horseFile->dadSoboWinRate = $parent->winRate;
-                    $horseFile->dadSoboPodiumRate = $parent->podiumRate;
-                }
+                $horseFile->dadSobo = NetkeibaParentHorseUtil::getInstance()->getHorseData($bloodIdArr[2]);
             }
             // 母の情報
             if(count($bloodIdArr) > 3){
-                $parent = NetkeibaUtil::getParentRecode($bloodIdArr[3]);
-                if(!is_null($parent)){
-                    $horseFile->mamName = $parent->name;
-                    $horseFile->mamRecode = $parent->recode;
-                    $horseFile->mamWinRate = $parent->winRate;
-                    $horseFile->mamPodiumRate = $parent->podiumRate;
-                }
+                $horseFile->mam = NetkeibaParentHorseUtil::getInstance()->getHorseData($bloodIdArr[3]);
             }
             // 母方の祖父の情報
             if(count($bloodIdArr) > 4){
-                $parent = NetkeibaUtil::getParentRecode($bloodIdArr[4]);
-                if(!is_null($parent)){
-                    $horseFile->mamSohuName = $parent->name;
-                    $horseFile->mamSohuRecode = $parent->recode;
-                    $horseFile->mamSohuWinRate = $parent->winRate;
-                    $horseFile->mamSohuPodiumRate = $parent->podiumRate;
-                }
+                $horseFile->mamSohu = NetkeibaParentHorseUtil::getInstance()->getHorseData($bloodIdArr[4]);
             }
             // 母方の祖母の情報
             if(count($bloodIdArr) > 5){
-                $parent = NetkeibaUtil::getParentRecode($bloodIdArr[5]);
-                if(!is_null($parent)){
-                    $horseFile->mamSoboName = $parent->name;
-                    $horseFile->mamSoboRecode = $parent->recode;
-                    $horseFile->mamSoboWinRate = $parent->winRate;
-                    $horseFile->mamSoboPodiumRate = $parent->podiumRate;
-                }
+                $horseFile->mamSobo = NetkeibaParentHorseUtil::getInstance()->getHorseData($bloodIdArr[5]);
             }
 
         }
@@ -501,68 +377,6 @@ class NetkeibaUtil
         // 書き込み
         $contents = json_encode($horseFile, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         Storage::disk('public')->put("horse/" . $horseId . ".json", $contents);
-    }
-
-
-    /**
-     * 親の成績を取得
-     */
-    private static function getParentRecode($horseId) : FileParentHorse
-    {
-        $rtnObj = new FileParentHorse();
-
-        try {
-            // ファイルから取得
-            if(Storage::disk('public')->exists("parent/" . $horseId . ".json")){
-                $contents = Storage::disk('public')->get("parent/" . $horseId . ".json");
-                $json = json_decode($contents, true);
-                $rtnObj->horseId = $json["horseId"];
-                $rtnObj->name = $json["name"];
-                $rtnObj->recode = $json["recode"];
-                $rtnObj->winRate = $json["winRate"];
-                $rtnObj->podiumRate = $json["podiumRate"];
-            }else{
-                // htmlから取得
-                $html = file_get_contents("https://db.netkeiba.com/horse/" . $horseId);
-                if(!$html){
-                    return null;
-                }
-                $doc = phpQuery::newDocument($html);
-                $rtnObj->horseId = $horseId;
-                $rtnObj->name = $doc->find('div.horse_title h1')->text();
-                // 通算成績
-                $loop = count($doc->find('div.db_main_deta table.db_prof_table tr')->elements);
-                for($j=0; $j<$loop; $j++){
-                    $th = $doc->find("div.db_main_deta table.db_prof_table tr:eq(". $j . ") th")->text();
-                    if($th == "通算成績"){
-                        $strWork = $doc->find("div.db_main_deta table.db_prof_table tr:eq(". $j . ") td a")->text();
-                        $rankArr = explode("-",$strWork);
-                        $rank1 = intval($rankArr[0]);
-                        $rank2 = intval($rankArr[1]);
-                        $rank3 = intval($rankArr[2]);
-                        $rankEtc = intval($rankArr[3]);
-                        $total = $rank1 + $rank2 + $rank3 + $rankEtc;
-                        // 成績
-                        $rtnObj->recode = sprintf("[%d-%d-%d-%d]", $rank1, $rank2, $rank3, $rankEtc);
-                        if($total > 0){
-                            $rtnObj->winRate = round($rank1 / $total * 100);
-                            $rtnObj->podiumRate = round(($rank1 + $rank2 + $rank3) / $total * 100);
-                        }else{
-                            $rtnObj->winRate = 0;
-                            $rtnObj->podiumRate = 0;
-                        }
-                        break;
-                    }
-                }
-                // 書き込み
-                $contents = json_encode($rtnObj, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-                Storage::disk('public')->put("parent/" . $horseId . ".json", $contents);
-            }
-        }
-        catch(\Exception $err){
-            return null;
-        }
-        return $rtnObj;
     }
 
 
@@ -581,6 +395,90 @@ class NetkeibaUtil
         $rtnStr .= intval($day) . "日目 ";
         $rtnStr .= intval($raceNo) . "レース";
         return $rtnStr;
+    }
+
+
+    /**
+     * 地方競馬のレース情報の取得
+     */
+    public static function DownloadRegionRaceInfo($raceId)
+    {
+        // netkeibaのサイトからhtml情報を取得
+        $html = file_get_contents("https://nar.netkeiba.com/race/shutuba.html?race_id=" . $raceId);
+        if(!$html){
+            return;
+        }
+
+        $html = mb_convert_encoding($html, "UTF-8", "EUC-JP");
+
+        $raceFile = new FileRaceData();
+        try {
+            $doc = phpQuery::newDocument($html);
+            $raceColumn01 = $doc->find("div.RaceColumn01")->getDocument();
+
+            // レースID
+            $raceFile->raceId = $raceId;
+            // レース名
+            $raceFile->name = trim($raceColumn01->find("div.RaceList_Item02 div.RaceName")->text());
+            // レース情報
+            $strRace = $raceColumn01->find("div.RaceData01")->text();
+            $strRace = preg_replace('/　|\s+/', '', $strRace);
+            $raceArr = explode("/", $strRace);
+            // 発送時刻
+            $raceFile->startingTime = str_replace("発走", "", $raceArr[0]);
+            // 種類
+            $type = mb_substr(preg_replace('/　|\s+/', '', $raceArr[1]), 0, 1);
+            if($type == "芝"){
+                $raceFile->groundType = 1;
+            }elseif($type == "ダ"){
+                $raceFile->groundType = 2;
+            }elseif($type == "障"){
+                $raceFile->groundType = 3;
+            }
+            // 距離
+            $raceFile->distance = intval(preg_replace('/[^0-9]/', '', $raceArr[1]));
+            // 向き
+            if(false !== strpos($raceArr[1], "左")){
+                $raceFile->direction = 1;
+            }elseif(false !== strpos($raceArr[1], "右")){
+                $raceFile->direction = 2;
+            }
+        
+            // 出馬情報を取得
+            $raceTable = $doc->find("div.RaceColumn02 div.RaceTableArea table")->getDocument();
+            $horseCnt = count($raceTable->find("tr.HorseList")->elements);
+            // 頭数
+            $raceFile->horseCount = $horseCnt;
+
+            for($i=0; $i<$horseCnt; $i++){
+                $info = new ShutsubaInfo();
+                $link = $raceTable->find("tr.HorseList:eq(" . $i . ") td.HorseInfo span.HorseName a")->attr("href");
+                $title = $raceTable->find("tr.HorseList:eq(" . $i . ") td.HorseInfo span.HorseName a")->text();
+                $linkArr = explode("/", $link);
+                $info->horseId = end($linkArr);
+                $info->link = $link;
+                $info->name = $title;
+
+                $info->waku = $raceTable->find("tr.HorseList:eq(" . $i . ") td:eq(0)")->text();
+                $info->umaban = $raceTable->find("tr.HorseList:eq(" . $i . ") td:eq(1)")->text();
+                $info->age = $raceTable->find("tr.HorseList:eq(" . $i . ") td:eq(4) span")->text();
+                $info->jockey = $raceTable->find("tr.HorseList:eq(" . $i . ") td:eq(6) span.Jockey a")->text();
+                $info->isCancel = 0;
+                $className = $raceTable->find("tr.HorseList:eq(" . $i . ")")->attr("class");
+                if(false !== strpos($className, "Cancel")){
+                    $info->isCancel = 1;
+                }
+
+                $raceFile->shutsubaArray[] = $info;
+            }
+        }
+        catch(\Exception $err){
+            return null;
+        }
+
+        // 書き込み
+        $contents = json_encode($raceFile, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        Storage::disk('public')->put("race/" . $raceId . ".json", $contents);
     }
 
 

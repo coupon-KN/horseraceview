@@ -56,59 +56,18 @@ export interface IViewHorseData {
     /** 複勝率 */
     podiumRate : string;
 
-    /** 父親名 */
-    dadName : string;
-    /** 父(成績) */
-    dadRecode : string;
-    /** 父(勝率) */
-    dadWinRate : string;
-    /** 父(複勝率) */
-    dadPodiumRate : string;
-
-    /** 父方の祖父名 */
-    dadSohuName : string;
-    /** 父方の祖父(成績) */
-    dadSohuRecode : string;
-    /** 父方の祖父(勝率) */
-    dadSohuWinRate : string;
-    /** 父方の祖父(複勝率) */
-    dadSohuPodiumRate : string;
-
-    /** 父方の祖母名 */
-    dadSoboName : string;
-    /** 父方の祖母(成績) */
-    dadSoboRecode : string;
-    /** 父方の祖母(勝率) */
-    dadSoboWinRate : string;
-    /** 父方の祖母(複勝率) */
-    dadSoboPodiumRate : string;
-
-    /** 母親名 */
-    mamName : string;
-    /** 母(成績) */
-    mamRecode : string;
-    /** 母(勝率) */
-    mamWinRate : string;
-    /** 母(複勝率) */
-    mamPodiumRate : string;
-    
-    /** 母方の祖父名 */
-    mamSohuName : string;
-    /** 母方の祖父(成績) */
-    mamSohuRecode : string;
-    /** 母方の祖父(勝率) */
-    mamSohuWinRate : string;
-    /** 母方の祖父(複勝率) */
-    mamSohuPodiumRate : string;
-
-    /** 母方の祖母名 */
-    mamSoboName : string;
-    /** 母方の祖母(成績) */
-    mamSoboRecode : string;
-    /** 母方の祖母(勝率) */
-    mamSoboWinRate : string;
-    /** 母方の祖母(複勝率) */
-    mamSoboPodiumRate : string;
+    /** 父親の情報 */
+    dad : IParentHorse;
+    /** 父方の祖父の情報 */
+    dadSohu : IParentHorse;
+    /** 父方の祖母の情報 */
+    dadSobo : IParentHorse;
+    /** 母親の情報 */
+    mam : IParentHorse;
+    /** 母方の祖父の情報 */
+    mamSohu : IParentHorse;
+    /** 母方の祖母の情報 */
+    mamSobo : IParentHorse;
 
     /** 履歴 */
     recodeArray : IRaceHistory[];
@@ -160,10 +119,27 @@ export interface IRaceHistory {
     firstPace : string;
     /** ペース(後半3ハロン) */
     latterPace : string;
+    /** ペース区分(S,M,H) */
+    paceKbn : string;
     /** 上り3ハロン */
     agari600m : string;
     /** 馬体重 */
     weight : string;
     /** 勝ち馬 */
     winHorse : string;
+}
+
+
+// レース履歴
+export interface IParentHorse {
+    /** 馬ID */
+    horseId : string;
+    /** 名前 */
+    name : string;
+    /** 成績 */
+    recode : string;
+    /** 勝率 */
+    winRate : string;
+    /** 複勝率 */
+    podiumRate : string;
 }

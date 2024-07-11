@@ -30,23 +30,37 @@
         bottom: 0;
         background-color: #fff5ea;
     }
-    a.btn-parent {
+    footer a{
         position: absolute;
         top: 0;
         bottom: 0;
-        left: 20px;
         margin: auto;
-        width: 64px;
-        height: 29px;
         background-position: center;
         background-repeat: no-repeat;
         background-size: cover;
     }
-    .couple-off {
-        background-image: url("/img/couple-horse-off.png");
+    a.btn-bloodline {
+        left: 20px;
+        width: 64px;
+        height: 29px;
     }
-    .couple-on {
-        background-image: url("/img/couple-horse-on.png");
+    .bloodline-off {
+        background-image: url("/img/bloodline-off.png");
+    }
+    .bloodline-on {
+        background-image: url("/img/bloodline-on.png");
+    }
+    a.btn-allopen {
+        left: 120px;
+        width: 80px;
+        height: 30px;
+        text-align: center;
+        color: #464646;
+        font-weight: bold;
+        text-decoration-line: none;
+        cursor: pointer;
+        border: solid 2px #464646;
+        border-radius: 10px;
     }
 
     div.loading {

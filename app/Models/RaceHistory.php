@@ -72,6 +72,9 @@ class RaceHistory
     /** ペース(後半3ハロン) */
     public $latterPace;
 
+    /** ペース区分(S,M,H) */
+    public $paceKbn;
+
     /** 上り3ハロン */
     public $agari600m;
 
@@ -81,4 +84,15 @@ class RaceHistory
     /** 勝ち馬 */
     public $winHorse;
 
+    /** Jsonデータを設定 */
+    public function setJsonData($json) {
+        foreach($json as $key => $val){
+            if(property_exists($this, $key)){
+                $this->{$key} = $val;
+            }
+        }
+        if(!empty($this->groundType)){
+            $this->groundShortName = config("const.GROUND_SHORT_NAME")[$this->groundType];
+        }
+    }
 }

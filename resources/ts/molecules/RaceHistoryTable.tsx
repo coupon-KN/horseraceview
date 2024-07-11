@@ -61,7 +61,7 @@ const RaceHistoryTable = (props : Props) => {
                         </div>
                         <div>
                             <span className='w-25 d-inline-block'>{h.time}</span>
-                            <span className='w-75 d-inline-block'>{h.firstPace + " - " + h.latterPace + " (上り " + h.agari600m + ")"}</span>
+                            <span className='w-75 d-inline-block'>{h.firstPace + " - " + h.latterPace + "（" + h.paceKbn + "） 上り " + h.agari600m}</span>
                         </div>
                         <div>{h.pointTime}</div>
                         <div>{h.winHorse}</div>

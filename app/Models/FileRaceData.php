@@ -1,5 +1,6 @@
 <?php
 namespace App\Models;
+use App\Models\ShutsubaInfo;
 
 
 /**
@@ -29,6 +30,25 @@ class FileRaceData
     public $horseCount;
 
     /** 出馬情報配列 */
-    public $shutsubaArray = [];
+    public array $shutsubaArray = [];
+
+    /** Jsonデータを設定 */
+    public function setJsonData($json) {
+        foreach($json as $key => $val){
+            if(property_exists($this, $key)){
+                if(is_array($this->{$key})){
+                    if($key == "shutsubaArray"){
+                        foreach($val as $row) {
+                            $shutsuba = new ShutsubaInfo();
+                            $shutsuba->setJsonData($row);
+                            $this->{$key}[] = $shutsuba;
+                        }
+                    }
+                }else{
+                    $this->{$key} = $val;
+                }
+            }
+        }
+    }
 
 }

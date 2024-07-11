@@ -17,7 +17,7 @@ const PageFrame = (props:any) => {
             <div>
                 <a className="link-btn" onClick={() => {navigate("/")}}>ホーム</a>
                 <a className="link-btn" onClick={() => {navigate("/horserace")}}>けいば</a>
-                <a className="link-btn" onClick={() => {navigate("/page1")}}>ページ１</a>
+                <a className="link-btn" onClick={() => {navigate("/horsememo")}}>メモ</a>
             </div>
         </header>
         <div className='page-body'>

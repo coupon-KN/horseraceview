@@ -23,5 +23,5 @@ class HorseRace
     public $direction = 0;
 
     /** 出馬配列 */
-    public $horseArray = [];
+    public array $horseArray = [];
 }

@@ -1,7 +1,7 @@
 /**
- * 競馬のスクレイピングページ
+ * 競走馬ページ
  */
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import "./HorseRacePage.scss"
 import RaceHistoryTable from "../molecules/RaceHistoryTable";
 import ParentHorseCell from "../molecules/ParentHorseCell";
@@ -20,7 +20,8 @@ const HorseRacePage = () => {
     const [raceData, setRaceData] = useState<IViewRaceData>();
     const [paddockArray, setPaddockArray] = useState<string[]>([]);
     const [markArray, setMarkArray] = useState<string[]>([]);
-    const [isParent, setIsParent] = useState(false);
+    const [isBloodline, setIsBloodline] = useState(false);
+    const tableRef = useRef<HTMLTableElement>(null);
 
     React.useEffect(() => {
         setIsLoading(true);
@@ -84,6 +85,8 @@ const HorseRacePage = () => {
         }else if(cell.innerText == "〇"){
             cell.innerText = "▲";
         }else if(cell.innerText == "▲"){
+            cell.innerText = "△";
+        }else if(cell.innerText == "△"){
             cell.innerText = "☆";
         }else if(cell.innerText == "☆"){
             cell.innerText = "消";
@@ -126,6 +129,19 @@ const HorseRacePage = () => {
                 nextTableRow.className = nextTableRow.className.replace("active", "passive");
             }else{
                 nextTableRow.className = nextTableRow.className.replace("passive", "active");
+            }
+        }
+    }
+    /**
+     * AllOpenボタンクリックイベント
+     */
+    const AllOpenClickHandle = () => {
+        if(tableRef != null){
+            const rows = tableRef.current?.getElementsByClassName("passive");
+            if(rows !== undefined && rows.length > 0){
+                for (let i=rows.length - 1; i>=0; i--) {
+                    rows[i].className = rows[i].className.replace("passive", "active");
+                }
             }
         }
     }
@@ -183,7 +199,7 @@ const HorseRacePage = () => {
                     <div className="fs-2">{raceData.raceName}</div>
                     <div>{raceData.raceInfo}</div>
                 </div>
-                <table className="w-100 table-bordered tbl-race">
+                <table className="w-100 table-bordered tbl-race" ref={tableRef}>
                     <thead className="text-center">
                         <tr className="fs12">
                             <th>枠</th>
@@ -228,7 +244,7 @@ const HorseRacePage = () => {
                                 </tr>
                                 <tr key={index + 100} className="passive">
                                     <td colSpan={5} className="ps-2 bg-light">
-                                        {isParent ? <ParentHorseCell horseData={h} /> : ""}
+                                        {isBloodline ? <ParentHorseCell horseData={h} /> : ""}
                                         <RaceHistoryTable history={h.recodeArray.slice(0,10)} />
                                     </td>
                                 </tr>
@@ -242,7 +258,8 @@ const HorseRacePage = () => {
             : "データがありません"}
         </div>
         <footer>
-            <a className={"btn-parent " + (isParent ? "couple-on" : "couple-off")} onClick={() => setIsParent(!isParent)}></a>
+            <a className={"btn-bloodline " + (isBloodline ? "bloodline-on" : "bloodline-off")} onClick={() => setIsBloodline(!isBloodline)}></a>
+            <a className="btn-allopen" onClick={AllOpenClickHandle}>全て開く</a>
         </footer>
 
         {isLoading ? <div className="loading"></div> : ""}

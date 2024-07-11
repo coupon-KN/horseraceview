@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import PageFrame from "./templetes/page_frame";
 import Top from "./pages/top";
 import HorseRacePage from "./pages/HorseRacePage";
+import HorseMemoPage from "./pages/HorseMemoPage";
 
 const App = () => {
     return (
@@ -16,7 +17,7 @@ const App = () => {
             <Routes>
                 <Route path='/' element={<Top />} />
                 <Route path='/horserace' element={<HorseRacePage />} />
-                <Route path='/page2' element={<h1>Page 1</h1>} />
+                <Route path='/horsememo' element={<HorseMemoPage />} />
                 <Route path='/*' element={<h1>Not found</h1>} />
             </Routes>
         </PageFrame>

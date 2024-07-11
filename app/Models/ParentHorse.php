@@ -2,33 +2,24 @@
 namespace App\Models;
 
 /**
- * 出馬情報クラス
+ * 親馬の情報ファイル
  */
-class ShutsubaInfo
+class ParentHorse
 {
     /** 馬ID */
     public $horseId;
 
-    /** 情報リンク */
-    public $link;
-    
-    /** 枠番 */
-    public $waku;
-
-    /** 馬番 */
-    public $umaban;
-
     /** 名前 */
     public $name;
- 
-    /** 年齢 */
-    public $age;
 
-    /** 騎手 */
-    public $jockey;
+    /** 成績 */
+    public $recode;
 
-    /** 除外フラグ */
-    public $isCancel;
+    /** 勝率 */
+    public $winRate;
+
+    /** 複勝率 */
+    public $podiumRate;
 
     /** Jsonデータを設定 */
     public function setJsonData($json) {
