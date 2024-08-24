@@ -34,6 +34,9 @@ class ViewRaceData
     /** 頭数 */
     public $horseCount;
 
+    /** コースメモ */
+    public $courseMemo;
+
     /** 競走馬情報配列 : ViewHorseData */
     public $horseArray = [];
 

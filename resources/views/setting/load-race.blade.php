@@ -56,7 +56,7 @@
                     </td>
                     <td>
                         @if($item["put_flg"])
-                        <a href="{{ route('raceview',['race_id' => $item['id']]) }}">ページへ</a>
+                        {{-- <a href="{{ route('raceview',['race_id' => $item['id']]) }}">ページへ</a> --}}
                         @endif
                     </td>
                 </tr>

@@ -42,7 +42,7 @@ const RaceHistoryTable = (props : Props) => {
                     <div className="col-4 p-1">
                         <div>{h.date}</div>
                         <div>{h.baba}</div>
-                        <div>{h.raceName}</div>
+                        <div><a href={h.raceUrl} target='_blank'>{h.raceName}</a></div>
                         <div>{h.groundShortName + h.distance + " " + h.condition}</div>
                     </div>
                     <div className="col-1 p-1 fs-4">

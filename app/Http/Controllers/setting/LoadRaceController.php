@@ -67,15 +67,7 @@ class LoadRaceController
         $rtnParam = ["sel_date" => $input["sel_date"], "sel_sche" => $input["sel_sche"]];
         $raceId = $input["race_id"];
 
-        // 取得してファイルに書き込み
-        NetkeibaUtil::DownloadRaceInfo($raceId);
-        if(NetkeibaUtil::existsRaceData($raceId)){
-            $raceObj = NetkeibaUtil::getRaceData($raceId);
-            foreach($raceObj->shutsubaArray as $item){
-                // 取得してファイルに書き込み
-                NetkeibaUtil::DownloadHorseInfo($item->horseId);
-            }
-        }
+        $this->callNetkeibaScrapingMethod($raceId);
 
         return redirect()->route('setting.raceload', $rtnParam); 
     }
@@ -90,20 +82,36 @@ class LoadRaceController
         $raceIdArr = $input["race_id"];
 
         foreach($raceIdArr as $raceId){
-            // 取得してファイルに書き込み
+            $this->callNetkeibaScrapingMethod($raceId);
+        }
+
+        return redirect()->route('setting.raceload', $rtnParam); 
+    }
+
+    /**
+     * スクレイピングメソッドの呼び出し
+     */
+    private function callNetkeibaScrapingMethod($raceId) {
+        $babaCode = substr($raceId, 4, 2);
+        if(in_array($babaCode, config("const.CENTRAL_BAMEI_CODE"))){
+            // 中央競馬
             NetkeibaUtil::DownloadRaceInfo($raceId);
             if(NetkeibaUtil::existsRaceData($raceId)){
                 $raceObj = NetkeibaUtil::getRaceData($raceId);
                 foreach($raceObj->shutsubaArray as $item){
-                    // 取得してファイルに書き込み
                     NetkeibaUtil::DownloadHorseInfo($item->horseId);
                 }
             }
-
+        }else{
+            // 地方競馬
+            NetkeibaUtil::DownloadRegionRaceInfo($raceId);
+            if(NetkeibaUtil::existsRaceData($raceId)){
+                $raceObj = NetkeibaUtil::getRaceData($raceId);
+                foreach($raceObj->shutsubaArray as $item){
+                    NetkeibaUtil::DownloadHorseInfo($item->horseId);
+                }
+            }
         }
-
-        return redirect()->route('setting.raceload', $rtnParam); 
-
     }
 
 }

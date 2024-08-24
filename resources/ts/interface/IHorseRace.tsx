@@ -5,7 +5,7 @@
 // スケジュール
 export interface IRaceScheduleItem {
     id : string;
-    name : string
+    name : string;
 }
 
 // レース情報
@@ -28,6 +28,8 @@ export interface IViewRaceData {
     direction : number;
     /** 頭数 */
     horseCount : number;
+    /** コースメモ */
+    courseMemo : string;
     /** 競走馬情報配列 */
     horseArray : IViewHorseData[];
 
@@ -85,6 +87,8 @@ export interface IRaceHistory {
     raceNo : number;
     /** レース名 */
     raceName : string;
+    /** レースURL */
+    raceUrl : string;
     /** 頭数 */
     horseCount : number;
     /** 枠番 */
@@ -129,7 +133,6 @@ export interface IRaceHistory {
     winHorse : string;
 }
 
-
 // レース履歴
 export interface IParentHorse {
     /** 馬ID */
@@ -142,4 +145,30 @@ export interface IParentHorse {
     winRate : string;
     /** 複勝率 */
     podiumRate : string;
+}
+
+// keyValue
+export interface ISelectItem {
+    key : string;
+    value : string;
+}
+
+// レース情報アイテム
+export interface IRaceListItem {
+    id : string;
+    name : string;
+    status : number;
+}
+
+// 設定用スケジュールデータ
+export interface ISettingSchedule {
+    central : ISelectItem[];
+    region : ISelectItem[];
+    schedule : ISettingScheduleItem[];
+}
+
+export interface ISettingScheduleItem {
+    id : string;
+    name : string;
+    num : number;
 }

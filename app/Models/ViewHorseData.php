@@ -18,6 +18,8 @@ class ViewHorseData
     public $name;
     /** 年齢 */
     public $age;
+    /** 斤量 */
+    public $kinryo;
     /** 騎手 */
     public $jockey;
     /** 除外 */

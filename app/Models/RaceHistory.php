@@ -21,6 +21,9 @@ class RaceHistory
     /** レース名 */
     public $raceName;
 
+    /** レースURL */
+    public $raceUrl;
+
     /** 頭数 */
     public $horseCount;
 

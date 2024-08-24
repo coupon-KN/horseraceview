@@ -96,6 +96,14 @@ class NetkeibaUtil
         $view->raceInfo .= $raceFile->distance . "m";
         $view->raceInfo .= "("  . config("const.DIRECTION_NAME")[$raceFile->direction] . ") ";
         $view->raceInfo .= $raceFile->horseCount . "頭";
+        // メモ情報
+        $babaCode = substr($raceId, 4, 2);
+        if(array_key_exists($babaCode, config("const.BABA_MEMO"))){
+            if(array_key_exists($raceFile->distance, config("const.BABA_MEMO")[$babaCode])){
+                $view->courseMemo = config("const.BABA_MEMO")[$babaCode][$raceFile->distance];
+            }
+        }
+
         // 出馬情報
         foreach($raceFile->shutsubaArray As $item)
         {
@@ -104,6 +112,7 @@ class NetkeibaUtil
             $horse->umaban = $item->umaban;
             $horse->name = $item->name;
             $horse->age = $item->age;
+            $horse->kinryo = $item->kinryo;
             $horse->jockey = $item->jockey;
             $horse->isCancel = $item->isCancel;
             // 競走馬情報
@@ -120,8 +129,8 @@ class NetkeibaUtil
                 }
                 // 履歴
                 if(count($fileHorse->recodeArray) > 0){
-                    $horse->recodeArray = array_splice($fileHorse->recodeArray, 0, 10);
-                    //$horse->recodeArray = $fileHorse->recodeArray;
+                    //$horse->recodeArray = array_splice($fileHorse->recodeArray, 0, 10);
+                    $horse->recodeArray = $fileHorse->recodeArray;
                 }else{
                     $horse->recodeArray = [];
                 }
@@ -169,6 +178,7 @@ class NetkeibaUtil
             $raceFile->raceId = $raceId;
             // レース名
             $raceFile->name = trim($raceColumn01->find("h1.RaceName")->text());
+            $raceFile->name = str_replace(PHP_EOL, "", $raceFile->name);
             // レース情報
             $strRace = $raceColumn01->find("div.RaceData01")->text();
             $strRace = preg_replace('/　|\s+/', '', $strRace);
@@ -211,6 +221,7 @@ class NetkeibaUtil
                 $info->waku = $raceTable->find("tr.HorseList:eq(" . $i . ") td:eq(0) span")->text();
                 $info->umaban = $raceTable->find("tr.HorseList:eq(" . $i . ") td:eq(1)")->text();
                 $info->age = $raceTable->find("tr.HorseList:eq(" . $i . ") td.Barei")->text();
+                $info->kinryo = $raceTable->find("tr.HorseList:eq(" . $i . ") td:eq(5)")->text();
                 $info->jockey = $raceTable->find("tr.HorseList:eq(" . $i . ") td.Jockey a")->text();
                 $info->isCancel = 0;
                 $className = $raceTable->find("tr.HorseList:eq(" . $i . ")")->attr("class");
@@ -341,6 +352,40 @@ class NetkeibaUtil
                     }
                 }
 
+                // 過去のレースURLを作成
+                if($history->date != "" && $history->baba != "" && $history->raceNo) {
+                    // 馬名からコードを取得
+                    $babaName = "";
+                    $babaCode = "";
+                    foreach(config("const.BAMEI_NAME") as $key => $val){
+                        if(strpos($history->baba, $val) !== false){
+                            $babaCode = $key;
+                            $babaName = $val;
+                            break;
+                        }
+                    }
+
+                    if($babaCode != ""){
+                        if(in_array($babaCode, config("const.CENTRAL_BAMEI_CODE"))){
+                            // 中央競馬
+                            $rtnId = date("Y", strtotime($history->date));
+                            $rtnId .= substr("00" . preg_replace("/[^0-9]/", "", explode($babaName, $history->baba)[0]), -2);
+                            $rtnId .= $babaCode;
+                            $rtnId .= substr("00" . preg_replace("/[^0-9]/", "", explode($babaName, $history->baba)[1]), -2);
+                            $rtnId .= substr("00" . $history->raceNo, -2);
+                            $history->raceUrl = str_replace("{raceid}", $rtnId, config("const.JRA_MOVIE_PAGE"));
+                        }
+                        else if(array_key_exists($babaCode, config('const.REGION_TRACK_ID'))){
+                            // 地方競馬
+                            $raceUrl = config("const.REGION_MOVIE_PAGE");
+                            $raceUrl = str_replace("{track}", config('const.REGION_TRACK_ID')[$babaCode], $raceUrl);
+                            $raceUrl = str_replace("{date}", date("Ymd", strtotime($history->date)), $raceUrl);
+                            $raceUrl = str_replace("{raceno}", substr("00" . $history->raceNo, -2), $raceUrl);
+                            $history->raceUrl = $raceUrl;
+                        }
+                    }
+                }
+
                 $horseFile->recodeArray[] = $history;
             }
 
@@ -420,6 +465,7 @@ class NetkeibaUtil
             $raceFile->raceId = $raceId;
             // レース名
             $raceFile->name = trim($raceColumn01->find("div.RaceList_Item02 div.RaceName")->text());
+            $raceFile->name = str_replace("\n", "", $raceFile->name);
             // レース情報
             $strRace = $raceColumn01->find("div.RaceData01")->text();
             $strRace = preg_replace('/　|\s+/', '', $strRace);
@@ -462,6 +508,7 @@ class NetkeibaUtil
                 $info->waku = $raceTable->find("tr.HorseList:eq(" . $i . ") td:eq(0)")->text();
                 $info->umaban = $raceTable->find("tr.HorseList:eq(" . $i . ") td:eq(1)")->text();
                 $info->age = $raceTable->find("tr.HorseList:eq(" . $i . ") td:eq(4) span")->text();
+                $info->kinryo = $raceTable->find("tr.HorseList:eq(" . $i . ") td:eq(5)")->text();
                 $info->jockey = $raceTable->find("tr.HorseList:eq(" . $i . ") td:eq(6) span.Jockey a")->text();
                 $info->isCancel = 0;
                 $className = $raceTable->find("tr.HorseList:eq(" . $i . ")")->attr("class");

@@ -1,16 +1,23 @@
 .horse-race {
+    height: 100%;
     position: relative;
     padding-bottom: 40px;
 
     .condtions {
         background-color: #fff5ea;
     }
+    .contents {
+        padding-top: .25rem !important;;
+        padding-left: .50rem !important;;
+        padding-right: .50rem !important;;
+        padding-bottom: 40px;
+    }
 
     .tbl-race {
         thead {
             background-color: #f4f2ec;
         }
-        tr.passive{
+        tr.close {
             display: none;
         }
         tr.delete {
@@ -19,8 +26,7 @@
         th:nth-child(1){width: 20px;}
         th:nth-child(2){width: 20px;}
         th:nth-child(3){width: 50px;}
-        th:nth-child(4){width: 50px;}
-        th:nth-child(5){width: auto;}
+        th:nth-child(4){width: auto;}
     }
 
     footer {
@@ -61,16 +67,6 @@
         cursor: pointer;
         border: solid 2px #464646;
         border-radius: 10px;
-    }
-
-    div.loading {
-        width: 100%;
-        height: calc(100vh - 100px);
-        position: absolute;
-        top: 0;
-        background-image: url("/img/wait-horse.gif");
-        background-position: center;
-        background-repeat: no-repeat;
     }
     
 }
