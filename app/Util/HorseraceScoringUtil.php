@@ -1,27 +1,26 @@
 <?php
-namespace App\Http\Controllers\api;
-use App\Util\NetkeibaUtil;
+namespace App\Util;
 use App\Models\ViewRaceData;
 use App\Models\ViewHorseData;
 
 
 /**
- * レース採点
+ * 競走馬採点クラス
  */
-class RaceScoringApi
+class HorseraceScoringUtil
 {
-    const BABA_RANK1 = ['01', '05', '06', '08', '09'];
-    const BABA_RANK2 = ['02', '04', '07'];
-    const BABA_RANK3 = ['03', '10'];
-    const DISTANCE_RANK1 = [2000];
-    const DISTANCE_RANK2 = [1600, 2400];
-    const DISTANCE_RANK3 = [1200, 2500];
+    private static $BABA_RANK1 = ['01', '05', '06', '08', '09'];
+    private static $BABA_RANK2 = ['02', '04', '07'];
+    private static $BABA_RANK3 = ['03', '10'];
+    private static $DISTANCE_RANK1 = [2000];
+    private static $DISTANCE_RANK2 = [1600, 2400];
+    private static $DISTANCE_RANK3 = [1200, 2500];
 
 
     /**
      * 採点処理
      */
-    function scoring($raceId)
+    public static function scoring($raceId)
     {
         $returnArr = [];
         if (!NetkeibaUtil::existsRaceData($raceId)) {
@@ -38,7 +37,7 @@ class RaceScoringApi
         foreach($raceData->horseArray as $horse) {
 
             // 勝利した中で一番高いクラス等級
-            $highestRank = $this->searchHighestRank($horse);
+            $highestRank = HorseraceScoringUtil::searchHighestRank($horse);
             $highestRankScore = 0;
             if($highestRank < $raceGarade) {
                 $highestRankScore = 100;
@@ -49,7 +48,7 @@ class RaceScoringApi
             }
 
             // 1年以内に勝利したクラス等級
-            $highestRankYear = $this->searchHighestRank($horse, date("Y-m-d", strtotime("-1 year")));
+            $highestRankYear = HorseraceScoringUtil::searchHighestRank($horse, date("Y-m-d", strtotime("-1 year")));
             $highestRankYearScore = 0;
             if($highestRankYear < $raceGarade) {
                 $highestRankYearScore = 100;
@@ -60,10 +59,10 @@ class RaceScoringApi
             }
 
             // 1年以内で勝った競馬場の等級
-            $raceTrackScore = $this->calcRaceTrackScore($horse);
+            $raceTrackScore = HorseraceScoringUtil::calcRaceTrackScore($horse);
 
             // 勝ち距離等級
-            $distanceScore = $this->calcDistanceScore($raceData, $horse);
+            $distanceScore = HorseraceScoringUtil::calcDistanceScore($raceData, $horse);
 
             // 点数
             $score = ceil($highestRankScore * 0.15 + $highestRankYearScore * 0.35 + $raceTrackScore * 0.2 + $distanceScore * 0.3);
@@ -75,14 +74,14 @@ class RaceScoringApi
             );
         }
 
-        return response($returnArr, 200);
+        return $returnArr;
     }
 
 
     /**
      * 勝利した中で一番高いクラス等級
      */
-    private function searchHighestRank(ViewHorseData $horse, $limitYmd = "") {
+    private static function searchHighestRank(ViewHorseData $horse, $limitYmd = "") {
         $classRankArray = config("const.RACE_CLASS_RANK");
         $highestRank = $classRankArray[array_key_last($classRankArray)];
 
@@ -120,7 +119,7 @@ class RaceScoringApi
     /**
      * 1年以内で勝った競馬場の等級
      */
-    private function calcRaceTrackScore(ViewHorseData $horse) {
+    private static function calcRaceTrackScore(ViewHorseData $horse) {
         $rankArray = array("num1" => 0, "win1" => 0, "num2" => 0, "win2" => 0, "num3" => 0, "win3" => 0);
         foreach($horse->recodeArray as $recode) {
             // 1年以内であること
@@ -136,13 +135,13 @@ class RaceScoringApi
                 }
             }
 
-            if(in_array($babaCode, $this::BABA_RANK1)){
+            if(in_array($babaCode, HorseraceScoringUtil::$BABA_RANK1)){
                 $rankArray["num1"] += 1;
                 $rankArray["win1"] += ($recode->difference <> "" && $recode->difference <= 0.2) ? 1 : 0;
-            }elseif(in_array($babaCode, $this::BABA_RANK2)){
+            }elseif(in_array($babaCode, HorseraceScoringUtil::$BABA_RANK2)){
                 $rankArray["num2"] += 1;
                 $rankArray["win2"] += ($recode->difference <> "" && $recode->difference <= 0.2) ? 1 : 0;
-            }elseif(in_array($babaCode, $this::BABA_RANK3)){
+            }elseif(in_array($babaCode, HorseraceScoringUtil::$BABA_RANK3)){
                 $rankArray["num3"] += 1;
                 $rankArray["win3"] += ($recode->difference <> "" && $recode->difference <= 0.2) ? 1 : 0;
             }
@@ -161,11 +160,11 @@ class RaceScoringApi
     /**
      * 1年以内で勝った距離ランク
      */
-    private function calcDistanceScore(ViewRaceData $raceData, ViewHorseData $horse) {
+    private static function calcDistanceScore(ViewRaceData $raceData, ViewHorseData $horse) {
         $raceRank = 4;
-        $raceRank = in_array($raceData->distance, $this::DISTANCE_RANK1) ? 1 : $raceRank;
-        $raceRank = in_array($raceData->distance, $this::DISTANCE_RANK2) ? 2 : $raceRank;
-        $raceRank = in_array($raceData->distance, $this::DISTANCE_RANK3) ? 3 : $raceRank;
+        $raceRank = in_array($raceData->distance, HorseraceScoringUtil::$DISTANCE_RANK1) ? 1 : $raceRank;
+        $raceRank = in_array($raceData->distance, HorseraceScoringUtil::$DISTANCE_RANK2) ? 2 : $raceRank;
+        $raceRank = in_array($raceData->distance, HorseraceScoringUtil::$DISTANCE_RANK3) ? 3 : $raceRank;
 
         $point = 0;
         $count = 0;
@@ -177,9 +176,9 @@ class RaceScoringApi
             $count++;
             if($raceData->groundType == $recode->groundType) {
                 $historyRank = 4;
-                $historyRank = in_array($recode->distance, $this::DISTANCE_RANK1) ? 1 : $historyRank;
-                $historyRank = in_array($recode->distance, $this::DISTANCE_RANK2) ? 2 : $historyRank;
-                $historyRank = in_array($recode->distance, $this::DISTANCE_RANK3) ? 3 : $historyRank;
+                $historyRank = in_array($recode->distance, HorseraceScoringUtil::$DISTANCE_RANK1) ? 1 : $historyRank;
+                $historyRank = in_array($recode->distance, HorseraceScoringUtil::$DISTANCE_RANK2) ? 2 : $historyRank;
+                $historyRank = in_array($recode->distance, HorseraceScoringUtil::$DISTANCE_RANK3) ? 3 : $historyRank;
 
                 // 同ランク、３馬身以下
                 if($raceRank < 4 && $historyRank < 4){
@@ -196,5 +195,6 @@ class RaceScoringApi
 
         return ($count > 0) ? ceil($point / $count * 100) : 0;
     }
+
 
 }

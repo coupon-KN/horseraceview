@@ -21,17 +21,17 @@ class NetkeibaUtil
      * スケジュールリストの取得
      */
     public static function getScheduleList($date){
-        $rtnArr = [];
         if (Storage::disk('public')->exists(NetkeibaUtil::$SCHEDULE_FILE)) {
-            $json = json_decode(Storage::disk('public')->get(NetkeibaUtil::$SCHEDULE_FILE));
-            foreach($json as $key => $val){
-                if($date == $key) {
-                    $rtnArr = $val;
-                    break;
-                }
+            $json = json_decode(Storage::disk('public')->get(NetkeibaUtil::$SCHEDULE_FILE), true);
+
+            if($date == "all") {
+                return $json;
+            }
+            else if(array_key_exists($date, $json)){
+                return $json[$date];
             }
         }
-        return $rtnArr;
+        return [];
     }
 
     /**
@@ -90,6 +90,7 @@ class NetkeibaUtil
         $view->distance  = $raceFile->distance;
         $view->direction  = $raceFile->direction;
         $view->horseCount = $raceFile->horseCount;
+        $view->raceGarade = $raceFile->raceGarade;
         // レース情報
         $view->raceInfo = $raceFile->startingTime . "発走 ";
         $view->raceInfo .= config("const.GROUND_NAME")[$raceFile->groundType];
@@ -202,7 +203,13 @@ class NetkeibaUtil
             }elseif(false !== strpos($raceArr[1], "右")){
                 $raceFile->direction = 2;
             }
-        
+
+            // レース等級の取得
+            $strClassName = $doc->find("#page div.RaceColumn01 .RaceName .Icon_GradeType")->attr("class");
+            $strRace = trim($doc->find("#page div.RaceColumn01 div.RaceData02")->text());
+            $raceArr = explode("\n", $strRace);
+            $raceFile->raceGarade = NetkeibaUtil::getRaceGradeClass($strClassName, $raceArr[4]);
+
             // 出馬情報を取得
             $raceTable = $doc->find("div.RaceColumn02 div.RaceTableArea table")->getDocument();
             $horseCnt = count($raceTable->find("tr.HorseList")->elements);
@@ -325,7 +332,7 @@ class NetkeibaUtil
                 }
                 $history->condition = $row->find("td:eq(15)")->text();
                 $history->time = $row->find("td:eq(17)")->text();
-                $history->difference = $row->find("td:eq(18)")->text();
+                $history->difference = trim($row->find("td:eq(18)")->text());
                 $history->pointTime = $row->find("td:eq(20)")->text();
                 $strWork = $row->find("td:eq(21)")->text();
                 $strArr = explode("-", $strWork);
@@ -496,6 +503,11 @@ class NetkeibaUtil
             // 頭数
             $raceFile->horseCount = $horseCnt;
 
+            // クラス
+            $strRace = trim($doc->find("div.RaceColumn01 div.RaceData02")->text());
+            $raceArr = explode("\n", $strRace);
+            $raceFile->raceGarade = $raceArr[3];
+            
             for($i=0; $i<$horseCnt; $i++){
                 $info = new ShutsubaInfo();
                 $link = $raceTable->find("tr.HorseList:eq(" . $i . ") td.HorseInfo span.HorseName a")->attr("href");
@@ -528,5 +540,96 @@ class NetkeibaUtil
         Storage::disk('public')->put("race/" . $raceId . ".json", $contents);
     }
 
+    /**
+     * 開催馬場情報を取得
+     */
+    public static function DownloadScheduleData($selDate) {
+        $centralArr = NetkeibaUtil::scrapingScheduleData($selDate, "c");
+        $regionArr = NetkeibaUtil::scrapingScheduleData($selDate, "r");
+
+        if(count($centralArr) > 0 || count($regionArr) > 0) {
+            $json = NetkeibaUtil::getScheduleList("all");
+            $json[$selDate] = array_merge($centralArr, $regionArr);
+            ksort($json);
+            $contents = json_encode($json, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+            Storage::disk('public')->put(NetkeibaUtil::$SCHEDULE_FILE,  $contents);
+        }
+    }
+    
+    private static function scrapingScheduleData($strYmd, $areaFlg)
+    {
+        $scheArr = [];
+        try {
+            if($areaFlg == "c"){
+                $link = "https://race.netkeiba.com/top/race_list_sub.html?kaisai_date=";
+            }else{
+                $link = "https://nar.netkeiba.com/top/race_list_sub.html?kaisai_date=";
+            }
+            $html = file_get_contents($link . date("Ymd", strtotime($strYmd)));
+
+            $doc = phpQuery::newDocument($html);
+            $cnt = count($doc->find("p.RaceList_DataTitle"));
+            if($cnt > 0){
+                for($i=0; $i<$cnt; $i++) {
+                    $element = $doc->find("p.RaceList_DataTitle:eq(" . $i . ")");
+                    $text = trim($element->text());
+
+                    $babaName = "";
+                    $babaCode = "";
+                    foreach(config("const.BAMEI_NAME") as $key => $val){
+                        if(strpos($text, $val) !== false){
+                            $babaCode = $key;
+                            $babaName = $val;
+                            break;
+                        }
+                    }
+
+                    $sche = ["id" => "", "name" => "", "num" => 12];
+                    if($areaFlg == "c"){
+                        $kai = preg_replace("/[^0-9]/", "", explode($babaName, $text)[0]);
+                        $hi = preg_replace("/[^0-9]/", "", explode($babaName, $text)[1]);
+                        $sche["id"] = substr($strYmd, 0, 4) . $babaCode . substr("00" . $kai, -2) . substr("00" . $hi, -2);
+                        $sche["name"] = sprintf("%d回 %s %d日目", $kai, $babaName, $hi);
+                    }else{
+                        $sche["id"] = substr($strYmd, 0, 4) . $babaCode . date("md", strtotime($strYmd));
+                        $sche["name"] = $babaName . " " . date("n月j日", strtotime($strYmd)) . "(" . config("const.WEEK_SHORT_NAME")[date("w", strtotime($strYmd))] . ")";
+                        $sche["num"] = count($doc->find(".RaceList_Data:eq(" . $i . ") .RaceList_DataItem")->elements);
+                    }
+                    $scheArr[] = $sche;
+                }
+            }
+        }
+        catch(\Exception $err){
+            $scheArr = [];
+        }
+
+        return $scheArr;
+    }
+
+
+    /**
+     * 中央のレース等級を取得
+     */
+    public static function getRaceGradeClass($className, $raceClass) {
+        $keys = array_keys(config("const.RACE_CLASS_RANK"));
+
+        $garade1 = count($keys) - 1;
+        $garade1 = (false !== strpos($className, "Icon_GradeType1") ) ? 0 : $garade1;
+        $garade1 = (false !== strpos($className, "Icon_GradeType2") ) ? 1 : $garade1;
+        $garade1 = (false !== strpos($className, "Icon_GradeType3") ) ? 2 : $garade1;
+        $garade1 = (false !== strpos($className, "Icon_GradeType15")) ? 3 : $garade1;
+        $garade1 = (false !== strpos($className, "Icon_GradeType5") ) ? 4 : $garade1;
+        $garade1 = (false !== strpos($className, "Icon_GradeType16")) ? 5 : $garade1;
+        $garade1 = (false !== strpos($className, "Icon_GradeType17")) ? 6 : $garade1;
+        $garade1 = (false !== strpos($className, "Icon_GradeType18")) ? 7 : $garade1;
+
+        $garade2 = 0;
+        foreach($keys as $val) {
+            if(false !== strpos($val, $raceClass)) break;
+            $garade2 ++;
+        }
+
+        return $keys[min($garade1, $garade2)];
+    }
 
 }

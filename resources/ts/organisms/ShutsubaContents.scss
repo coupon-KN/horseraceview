@@ -1,0 +1,81 @@
+.shutsuba {
+    height: 100%;
+    position: relative;
+    padding-bottom: 40px;
+
+    .condtions {
+        background-color: #fff5ea;
+        input[type=date] {
+            width: 125px;
+            height: 36px;
+            margin-right: 5px;
+        }
+        select {
+            width: calc(100% - 130px);
+            height: 36px;
+        }
+    }
+    .contents {
+        padding-top: .25rem !important;;
+        padding-left: .50rem !important;;
+        padding-right: .50rem !important;;
+        padding-bottom: 10px;
+    }
+
+    .tbl-race {
+        thead {
+            background-color: #f4f2ec;
+        }
+        tr.close {
+            display: none;
+        }
+        tr.delete {
+            background-color: #d0d0d0;
+        }
+        th:nth-child(1){width: 20px;}
+        th:nth-child(2){width: 20px;}
+        th:nth-child(3){width: 50px;}
+        th:nth-child(4){width: auto;}
+    }
+
+    footer {
+        width: 100%;
+        height: 40px;
+        position: fixed;
+        bottom: 0;
+        background-color: #fff5ea;
+    }
+    footer a{
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        margin: auto;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+    a.btn-bloodline {
+        left: 20px;
+        width: 64px;
+        height: 29px;
+    }
+    .bloodline-off {
+        background-image: url("/img/bloodline-off.png");
+    }
+    .bloodline-on {
+        background-image: url("/img/bloodline-on.png");
+    }
+    a.btn-door {
+        left: 110px;
+        width: 38px;
+        height: 30px;
+        background-image: url("/img/door.png");
+    }
+    a.btn-analysis {
+        left: 175px;
+        width: 30px;
+        height: 30px;
+        background-image: url("/img/analysis.png");
+    }
+    
+}

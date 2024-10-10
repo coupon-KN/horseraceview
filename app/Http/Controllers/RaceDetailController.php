@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 use App\Util\NetkeibaUtil;
+use App\Util\HorseraceScoringUtil;
 use Illuminate\Http\Request;
 
 
@@ -26,6 +27,7 @@ class RaceDetailController extends Controller
             $raceNo = intval(substr($raceId, -2));
             $viewData["pageTitle"] = config("const.BAMEI_NAME")[$babaCode] . $raceNo . "R " . $raceObj->raceName;
             $viewData["menuTitle"] = config("const.BAMEI_NAME")[$babaCode] . $raceNo . "R " . $raceObj->raceName;
+            $viewData["centralFlg"] = (in_array($babaCode, config("const.CENTRAL_BAMEI_CODE")));
         }else{
             $raceObj = null;
         }
@@ -34,5 +36,13 @@ class RaceDetailController extends Controller
         return view("race-detail", $viewData);
     }
 
+
+    /**
+     * スコア計算
+     */
+    function scoring($raceId) {
+        $rtnArr = HorseraceScoringUtil::scoring($raceId);
+        return response($rtnArr, 200);
+    }
 
 }

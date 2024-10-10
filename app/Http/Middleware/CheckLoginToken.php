@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Storage;
+use App\Util\MobileLoginUtil;
 use DateTime;
 
 class CheckLoginToken
@@ -18,18 +19,8 @@ class CheckLoginToken
     public function handle(Request $request, Closure $next): Response
     {
         $token = $request->cookie("chestnut-token");
-        if(!empty($token)){
-            // トークンチェック
-            if (Storage::disk("public")->exists("token.json")) {
-                $json = json_decode(Storage::disk("public")->get("token.json"), true);
-                if($token == $json["token"]){
-                    $dtNow = new DateTime();
-                    $dtLimit = new DateTime($json["limit"]);
-                    if($dtLimit >= $dtNow){
-                        return $next($request);
-                    }
-                }
-            }
+        if(MobileLoginUtil::isLogin($token)){
+            return $next($request);
         }
 
         return response(["id" => "", "name" => ""], 401);

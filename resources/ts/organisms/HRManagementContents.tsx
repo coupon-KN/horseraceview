@@ -1,17 +1,8 @@
-/**
- * 管理ページ
- */
 import React, { useState,useRef } from "react";
-import "./SettingScrapingRaceData.scss"
+import "./HRManagementContents.scss"
+import * as constants from "../constants";
 import axios, { AxiosResponse }  from "axios";
 import { ISelectItem,IRaceListItem } from "../interface/IHorseRace";
-
-
-//const HOST_URL = "http://127.0.0.1:8000";
-const HOST_URL = "https://chestnut-rice.sakuraweb.com";
-const KAISAI_BABA_URL = HOST_URL + "/api/horserace/kaisaibaba";
-const RACE_LIST_URL = HOST_URL + "/api/horserace/racelist";
-const SCRAPING_RACE_URL = HOST_URL + "/api/horserace/scrapingracedata";
 
 type Props = {
     setLoginMethod : any;
@@ -19,7 +10,10 @@ type Props = {
 }
 
 
-const SettingScrapingRaceData = (props:Props) => {
+/**
+ * 競馬管理コンテンツ
+ */
+const HRManagementContents = (props:Props) => {
     const [targetDate, setTargetDate] = useState(new Date().toLocaleDateString('sv-SE'));
     const [babaArr, setBabaArr] = useState<ISelectItem[]>();
     const [raceList, setRaceList] = useState<IRaceListItem[]>([]);
@@ -33,9 +27,8 @@ const SettingScrapingRaceData = (props:Props) => {
 
     /**
      * 日付変更イベント
-     * @param e 
      */
-    const changeDateHandle : React.ChangeEventHandler<HTMLInputElement> = async(e) => {
+    const changeDateHandler : React.ChangeEventHandler<HTMLInputElement> = async(e) => {
         setTargetDate(e.target.value);
         getBabaData(e.target.value);
     }
@@ -48,7 +41,7 @@ const SettingScrapingRaceData = (props:Props) => {
         props.setLoadingMethod(true);
         setRaceList([]);
         try{
-            await axios.post(KAISAI_BABA_URL, {sel_date : selDate}, { withCredentials: true})
+            await axios.post(constants.HR_KAISAI_BABA_URL, {sel_date : selDate}, { withCredentials: true})
             .then((response:AxiosResponse<ISelectItem[]>) => {
                 setBabaArr(response.data);
             })
@@ -68,18 +61,17 @@ const SettingScrapingRaceData = (props:Props) => {
         }
     }
 
-
     /**
      * 馬場変更イベント
      * @param e 
      */
-    const changeBabaHandle : React.ChangeEventHandler<HTMLSelectElement> = async(e) => {
+    const changeBabaHandler : React.ChangeEventHandler<HTMLSelectElement> = async(e) => {
         let raceId = e.target.value;
         setRaceList([]);
         if(raceId != "" && targetDate != ""){
             props.setLoadingMethod(true);
             try{
-                await axios.post(RACE_LIST_URL, {sel_date : targetDate, race_id : raceId}, { withCredentials: true})
+                await axios.post(constants.HR_RACE_LIST_URL, {sel_date : targetDate, race_id : raceId}, { withCredentials: true})
                 .then((response:AxiosResponse<IRaceListItem[]>) => {
                     setRaceList(response.data);
                 })
@@ -101,10 +93,35 @@ const SettingScrapingRaceData = (props:Props) => {
     }
 
     /**
+     * 開催馬場情報をスクレイピング
+     */
+    const scrapingKaisaiBabaHandler : React.MouseEventHandler<HTMLButtonElement> = async() => {
+        props.setLoadingMethod(true);
+        try{
+            await axios.post(constants.HR_SCRAPING_KAISAIBABA_URL, {sel_date : targetDate}, { withCredentials: true})
+            .then((response:AxiosResponse<ISelectItem[]>) => {
+                setBabaArr(response.data);
+                props.setLoadingMethod(false);
+            })
+            .catch((error) => {
+                if(error.response.status == 401){
+                    props.setLoginMethod(false);
+                }else{
+                    console.log(error);
+                }
+            });
+        }
+        catch(error) {
+            console.error(error);
+            props.setLoadingMethod(false);
+        }
+    }
+    
+    /**
      * レース情報取得
      * @param e 
      */
-    const scrapingRaceHandle : React.MouseEventHandler<HTMLButtonElement> = async(e) => {
+    const scrapingRaceHandler : React.MouseEventHandler<HTMLButtonElement> = async(e) => {
         const raceId = e.currentTarget.dataset.raceId as string;
         listItemStatusChange(raceId, 2);
         props.setLoadingMethod(true);
@@ -115,7 +132,7 @@ const SettingScrapingRaceData = (props:Props) => {
     /**
      * 一括取得
      */
-    const bulkScrapingHandle = async() => {
+    const bulkScrapingHandler = async() => {
         if(tableRef != null){
             const buttons = tableRef.current?.getElementsByClassName("btn-scraping");
             if(buttons !== undefined && buttons.length > 0){
@@ -130,13 +147,13 @@ const SettingScrapingRaceData = (props:Props) => {
             }
         }
     }
-
+    
     /**
      * スクレイピングAPIをコール
      */
     const callScrapingRaceData = async(raceId : string) => {
         try{
-            await axios.post(SCRAPING_RACE_URL, {race_id : raceId}, { withCredentials: true})
+            await axios.post(constants.HR_SCRAPING_RACE_URL, {race_id : raceId}, { withCredentials: true})
             .then((response:AxiosResponse<IRaceListItem>) => {
                 if(response.data.status == 1){
                     for(let i=0; i<raceList.length; i++){
@@ -178,18 +195,24 @@ const SettingScrapingRaceData = (props:Props) => {
     
 
     return (
-        <div className="kanri-scraping-race">
-            <div>
-                <label className="form-label w-100">対象日
-                    <input type="date" className="form-control" value={targetDate} onChange={changeDateHandle} />
-                </label>
-                <label className="form-label w-100">馬場
-                    <select className="form-control" onChange={changeBabaHandle}>
+        <div className="hr-management px-3">
+            <label className="form-label w-100">対象日
+                <input type="date" className="form-control" value={targetDate} onChange={changeDateHandler} />
+            </label>
+            { babaArr && babaArr.length > 0 ?
+                <label className="form-label w-100">開催馬場
+                    <select className="form-control" onChange={changeBabaHandler}>
                         <option value=""></option>
-                        { babaArr && babaArr.map((row) => <option value={row.key} key={row.key}>{row.value}</option>) }
+                        { babaArr.map((row) => <option value={row.key} key={row.key}>{row.value}</option>) }
                     </select>
                 </label>
-            </div>
+            : 
+            <>
+                <label className="form-label w-100">開催馬場</label>
+                <button type="button" className="btn btn-primary btn-sm" onClick={scrapingKaisaiBabaHandler}>開催情報を取得</button>
+            </>
+            }
+
             {raceList.length > 0 ? 
             <div>
                 <table className="table table-bordered tbl-race-list" ref={tableRef}>
@@ -214,19 +237,19 @@ const SettingScrapingRaceData = (props:Props) => {
                             </td>
                             <td>
                                 <button type="button" className="btn btn-primary btn-sm btn-scraping"
-                                    data-race-id={row.id} onClick={(ev) => scrapingRaceHandle(ev)}
+                                    data-race-id={row.id} onClick={(ev) => scrapingRaceHandler(ev)}
                                 >取得</button>
                             </td>
                         </tr>
                         )}
                     </tbody>
                 </table>
-                <button type="button" className="btn btn-primary w-100 mt-3" onClick={bulkScrapingHandle}>一括取得</button>
+                <button type="button" className="btn btn-primary w-100 mt-3" onClick={bulkScrapingHandler}>一括取得</button>
             </div>
             : ""}
+
         </div>
     );
-
 };
 
-export default SettingScrapingRaceData;
+export default HRManagementContents;

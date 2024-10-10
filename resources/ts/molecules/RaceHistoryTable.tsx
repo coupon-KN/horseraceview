@@ -55,13 +55,10 @@ const RaceHistoryTable = (props : Props) => {
                             <span className='w-25 d-inline-block'>{h.weight}</span>
                         </div>
                         <div>
-                            <span className='w-25 d-inline-block'>{h.horseCount}頭</span>
-                            <span className='w-25 d-inline-block'>{h.umaban}番</span>
-                            <span className='w-50 d-inline-block'>{h.ninki}人気({h.odds})</span>
+                            <span className='w-100 d-inline-block'>{h.horseCount + "頭　" + h.umaban + "番　" + h.ninki + "人気(" + h.odds + ")"}</span>
                         </div>
                         <div>
-                            <span className='w-25 d-inline-block'>{h.time}</span>
-                            <span className='w-75 d-inline-block'>{h.firstPace + " - " + h.latterPace + "（" + h.paceKbn + "） 上り " + h.agari600m}</span>
+                            <span className='w-100 d-inline-block'>{h.time + " (" + h.difference + ")　" + h.firstPace + " - " + h.latterPace + " (" + h.agari600m + ")"}</span>
                         </div>
                         <div>{h.pointTime}</div>
                         <div>{h.winHorse}</div>

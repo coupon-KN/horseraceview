@@ -29,6 +29,9 @@ class FileRaceData
     /** 頭数 */
     public $horseCount;
 
+    /** レースクラス */
+    public $raceGarade;
+
     /** 出馬情報配列 */
     public array $shutsubaArray = [];
 

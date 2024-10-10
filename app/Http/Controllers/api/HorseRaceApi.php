@@ -1,10 +1,10 @@
 <?php
 namespace App\Http\Controllers\api;
 use App\Util\NetkeibaUtil;
+use App\Util\MobileLoginUtil;
+use App\Util\HorseraceScoringUtil;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use DateTime;
-use Ramsey\Uuid\Uuid;
 
 
 /**
@@ -13,36 +13,55 @@ use Ramsey\Uuid\Uuid;
 class HorseRaceApi
 {
     /**
+     * ログインチェック
+     */
+    function loginCheck(Request $request)
+    {
+        $statusCode = 401;
+        $response = null;
+        if(MobileLoginUtil::isLogin($request->cookie("chestnut-token"))){
+            $response = MobileLoginUtil::getLoginUserInfo($request->cookie("chestnut-token"));
+            $statusCode = 200;
+        }
+        return response($response, $statusCode);
+    }
+
+    /**
+     * ログイン処理
+     */
+    function login(Request $request)
+    {
+        $input = $request->all();
+        $response["token"] = MobileLoginUtil::login($input["user_id"], $input["password"]);
+        $response["admin"] = MobileLoginUtil::getLoginUserInfo($response["token"])["admin"];
+        return response($response, 200);
+    }
+
+
+    /**
      * スケジュールの取得
      */
-    function getSchdule()
+    function getSchdule(Request $request)
     {
+        $input = $request->all();
+        $scheList = NetkeibaUtil::getScheduleList($input["sel_date"]);
+
         $rtnArr[] = ["id" => "", "name" => ""];
-        if (Storage::disk("public")->exists("schedule.json")) {
-            $json = json_decode(Storage::disk("public")->get("schedule.json"));
-            foreach($json as $day => $arr){
-                $daytime = strtotime($day);
-                if($daytime < strtotime("today") || $daytime > strtotime("+6 day")){
-                    continue;
-                }
-                foreach($arr as $item){
-                    for($i=1; $i<=$item->num; $i++){
-                        $raceId = $item->id . sprintf('%02d', $i);
-                        if (NetkeibaUtil::existsRaceData($raceId)) {
-                            $babaCode = substr($item->id, 4, 2);
-                    
-                            $name = date("m/d", $daytime);
-                            $name .= '(' . config('const.WEEK_SHORT_NAME')[date("w", $daytime)] . ') ';
-                            $name .= config("const.BAMEI_NAME")[$babaCode];
-                            $name .= ' ' . $i . 'レース';
-                            $rtnArr[] = ["id" => $raceId, "name" => $name];
-                        }
+        if(count($scheList) > 0){
+            foreach($scheList as $item){
+                for($i=1; $i<=$item->num; $i++){
+                    $raceId = $item->id . sprintf('%02d', $i);
+                    if (NetkeibaUtil::existsRaceData($raceId)) {
+                        $raceObj = NetkeibaUtil::GetViewRaceData($raceId);
+                        $babaCode = substr($item->id, 4, 2);
+                        $name = config("const.BAMEI_NAME")[$babaCode] . " " . $i . "R";
+                        $name .= " " . $raceObj->startingTime;
+                        $name .= " " . $raceObj->raceName;
+                        $rtnArr[] = ["id" => $raceId, "name" => $name];
                     }
                 }
             }
         }
-
-        // jsonで返却
         return response($rtnArr, 200);
     }
 
@@ -76,64 +95,32 @@ class HorseRaceApi
 
 
     /**
-     * ログインチェック
-     */
-    function loginCheck(Request $request)
-    {
-        $statusCode = 401;
-        $token = $request->cookie("chestnut-token");
-        if(!empty($token)){
-            // トークンチェック
-            if (Storage::disk("public")->exists("token.json")) {
-                $json = json_decode(Storage::disk("public")->get("token.json"), true);
-                if($token == $json["token"]){
-                    $dtNow = new DateTime();
-                    $dtLimit = new DateTime($json["limit"]);
-                    if($dtLimit >= $dtNow){
-                        $statusCode = 200;
-                    }
-                }
-            }
-        }
-
-        return response(null, $statusCode);
-    }
-
-    /**
-     * ログイン処理
-     */
-    function login(Request $request)
-    {
-        $input = $request->all();
-        $userId = hash('sha256', $input["user_id"]);
-        $passWd = hash('sha256', $input["password"]);
-
-        $response = ["token" => "", "limit" => ""];
-
-        $users = json_decode(Storage::disk("public")->get("users.json"), true);
-        foreach($users as $val){
-            if($userId == $val["user_id"] && $passWd == $val["password"] && $val["admin"]){
-                $date = new DateTime('+2 hour');
-                $response["token"] = (string) Uuid::uuid4();
-                $response["limit"] = $date->format("Y-m-d H:i:s");
-    
-                $contents = json_encode($response, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-                Storage::disk('public')->put("token.json",  $contents);
-                break;
-            }
-        }
-        
-        return response($response, 200);
-    }
-
-
-    /**
      * 日付から開催馬場を取得
      */
     function getKaisaiBaba(Request $request)
     {
         $input = $request->all();
         $scheList = NetkeibaUtil::getScheduleList($input["sel_date"]);
+
+        $rtnObj = [];
+        if(count($scheList) > 0){
+            foreach($scheList as $val){
+                $rtnObj[] = ["key" => $val->id, "value" => $val->name];
+            }
+        }
+        return response($rtnObj, 200);
+    }
+
+    /**
+     * 開催馬場情報をスクレイピング
+     */
+    function scrapingKaisaiBaba(Request $request)
+    {
+        $input = $request->all();
+        $selDate = date("Y-m-d", strtotime($input["sel_date"]));
+        NetkeibaUtil::DownloadScheduleData($selDate);
+
+        $scheList = NetkeibaUtil::getScheduleList($selDate);
 
         $rtnObj = [];
         if(count($scheList) > 0){
@@ -209,48 +196,14 @@ class HorseRaceApi
         return response($response, 200);
     }
 
-    /**
-     * スケジュール設定用データ取得
-     */
-    function getSettingScheduleData(Request $request){
-        $input = $request->all();
-        $selDate = isset($input["sel_date"]) ? $input["sel_date"] : date('Y-m-d');
-
-        $response = [];
-        foreach(config("const.CENTRAL_BAMEI_CODE") as $code){
-            $response["central"][] = array("key" => $code, "value" => config("const.BAMEI_NAME")[$code]);
-        }
-        foreach(config("const.REGION_BAMEI_CODE") as $code){
-            $response["region"][] = array("key" => $code, "value" => config("const.BAMEI_NAME")[$code]);
-        }
-
-        $response["schedule"] = [];
-        if (Storage::disk("public")->exists("schedule.json")) {
-            $json = json_decode(Storage::disk("public")->get("schedule.json"), true);
-            if(array_key_exists($selDate, $json)){
-                $response["schedule"] = $json[$selDate];
-            }
-        }
-
-        return response($response, 200);
-    }
 
     /**
-     * スケジュールの更新
+     * スコア計算API
      */
-    function updateScheduleData(Request $request){
+    function scoring(Request $request) {
         $input = $request->all();
-        $selDate = date("Y-m-d", strtotime($input["sel_date"]));
-        $scheJson = json_decode($input["schedule"], true);
-
-        $json = json_decode(Storage::disk("public")->get("schedule.json"), true);
-        $json[$selDate] = $scheJson;
-        ksort($json);
-
-        $contents = json_encode($json, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-        Storage::disk('public')->put("schedule.json",  $contents);
-
-        return $this->getSettingScheduleData($request);
+        $rtnArr = HorseraceScoringUtil::scoring($input["race_id"]);
+        return response($rtnArr, 200);
     }
 
 }

@@ -12,7 +12,11 @@ class LoginController extends Controller
     /**
      * 初期表示
      */
-    function index() {
+    function index(Request $request) {
+        if($request->session()->exists(config("const.SESSION_LOGIN_USER"))){
+            return redirect()->route('calendar.index'); 
+        }
+
         return view("login", []);
     }
 

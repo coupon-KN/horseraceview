@@ -34,6 +34,9 @@ class ViewRaceData
     /** 頭数 */
     public $horseCount;
 
+    /** レース等級 */
+    public $raceGarade;
+
     /** コースメモ */
     public $courseMemo;
 

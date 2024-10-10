@@ -27,27 +27,27 @@ class RaceCalendarController extends Controller
 
         // カレンダー情報を作成
         $viewData["targetDate"] = $dtTarget;
+        $viewData["prevMonth"] = date('Ym', strtotime(substr($dtTarget, 0, 8) . '01 -1 Month'));
+        $viewData["nextMonth"] = date('Ym', strtotime(substr($dtTarget, 0, 8) . '01 +1 Month'));
         $viewData["calendar"] = $this->createCalendarArray($dtTarget);
 
         // 開催情報を取得
         $kaisaiArray = [];
-        if (Storage::disk("public")->exists("schedule.json")) {
-            $json = json_decode(Storage::disk("public")->get("schedule.json"), true);
 
-            foreach($viewData["calendar"] as $week){
-                foreach($week as $day){
-                    if(array_key_exists($day, $json)){
-                        $kaisaiArray[$day]["central"] = [];
-                        $kaisaiArray[$day]["region"] = [];
-                        foreach($json[$day] as $item){
-                            $babaCode = substr($item["id"], 4, 2);
-                            $area = in_array($babaCode, config("const.CENTRAL_BAMEI_CODE")) ? "central" : "region";
-                            $kaisaiArray[$day][$area][] = array(
-                                "id" => $item["id"],
-                                "name" => config("const.BAMEI_NAME")[$babaCode],
-                                "num" => $item["num"]
-                            );
-                        }
+        $json = NetkeibaUtil::getScheduleList("all");
+        foreach($viewData["calendar"] as $week){
+            foreach($week as $day){
+                if(array_key_exists($day, $json)){
+                    $kaisaiArray[$day]["central"] = [];
+                    $kaisaiArray[$day]["region"] = [];
+                    foreach($json[$day] as $item){
+                        $babaCode = substr($item["id"], 4, 2);
+                        $area = in_array($babaCode, config("const.CENTRAL_BAMEI_CODE")) ? "central" : "region";
+                        $kaisaiArray[$day][$area][] = array(
+                            "id" => $item["id"],
+                            "name" => config("const.BAMEI_NAME")[$babaCode],
+                            "num" => $item["num"]
+                        );
                     }
                 }
             }
@@ -67,9 +67,10 @@ class RaceCalendarController extends Controller
         $raceId = $input["race_id"];
 
         $raceNum = 0;
-        if (Storage::disk("public")->exists("schedule.json")) {
-            $json = json_decode(Storage::disk("public")->get("schedule.json"), true);
-            foreach($json[$selDate] as $row){
+
+        $scheArr = NetkeibaUtil::getScheduleList($selDate);
+        if(count($scheArr) > 0) {
+            foreach($scheArr as $row){
                 if($row["id"] == $raceId){
                     $raceNum = $row["num"];
                     break;
@@ -113,16 +114,7 @@ class RaceCalendarController extends Controller
         $input = $request->all();
         $selDate = date("Y-m-d", strtotime($input["sel_date"]));
 
-        $centralArr = $this->scrapingScheduleData($selDate, "c");
-        $regionArr = $this->scrapingScheduleData($selDate, "r");
-
-        if(count($centralArr) > 0 || count($regionArr) > 0) {
-            $json = json_decode(Storage::disk("public")->get("schedule.json"), true);
-            $json[$selDate] = array_merge($centralArr, $regionArr);
-            ksort($json);
-            $contents = json_encode($json, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-            Storage::disk('public')->put("schedule.json",  $contents);
-        }
+        NetkeibaUtil::DownloadScheduleData($selDate);
 
         return redirect()->route("calendar.index", ["selYm" => date("Ym", strtotime($selDate))]);
     }

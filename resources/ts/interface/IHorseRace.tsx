@@ -28,6 +28,8 @@ export interface IViewRaceData {
     direction : number;
     /** 頭数 */
     horseCount : number;
+    /** レース等級 */
+    raceGarade : string;
     /** コースメモ */
     courseMemo : string;
     /** 競走馬情報配列 */
@@ -171,4 +173,11 @@ export interface ISettingScheduleItem {
     id : string;
     name : string;
     num : number;
+}
+
+// スコアデータ
+export interface IScoringItem {
+    umaban : number;
+    name : string;
+    score : number;
 }

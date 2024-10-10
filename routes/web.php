@@ -28,18 +28,7 @@ Route::middleware("is.pc")->group(function() {
         // レース詳細
         Route::controller(\App\Http\Controllers\RaceDetailController::class)->group(function() {
             Route::get("/detail/{race_id}", "index")->name("detail.index");
-        });
-
-        // 設定 - レースデータ取得をキックする画面
-        Route::controller(\App\Http\Controllers\setting\LoadRaceController::class)->group(function() {
-            Route::get("/setting/raceload", "index")->name("setting.raceload");
-            Route::post("/setting/raceload", "getRaceData")->name("setting.raceload.getRaceData");
-            Route::post("/setting/racebulkload", "getBulkRaceData")->name("setting.raceload.getBulkRaceData");
-        });
-        // 設定 - 競走馬データ取得をキックする画面
-        Route::controller(\App\Http\Controllers\setting\LoadHorseController::class)->group(function() {
-            Route::get("/setting/horseload/{race_id}", "index")->name("setting.horseload");
-            Route::post("/setting/horseload", "getHorseData")->name("setting.horseload.getHorseData");
+            Route::post("/detail/scoring{race_id}", "scoring")->name("detail.scoring");
         });
 
         // Chrome拡張機能

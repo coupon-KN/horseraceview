@@ -6,18 +6,17 @@
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import PageFrame from "./templetes/page_frame";
-import Top from "./pages/top";
+import TopPage from "./pages/TopPage";
 import HorseRacePage from "./pages/HorseRacePage";
-import HorseSettingPage from "./pages/HorseSettingPage";
+
 
 const App = () => {
     return (
     <BrowserRouter>
         <PageFrame>
             <Routes>
-                <Route path='/' element={<Top />} />
+                <Route path='/mobile' element={<TopPage />} />
                 <Route path='/horserace' element={<HorseRacePage />} />
-                <Route path='/horsesetting' element={<HorseSettingPage />} />
                 <Route path='/*' element={<h1>Not found</h1>} />
             </Routes>
         </PageFrame>
