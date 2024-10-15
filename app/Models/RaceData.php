@@ -1,20 +1,23 @@
 <?php
 namespace App\Models;
-use App\Models\ShutsubaInfo;
+use App\Models\HorseData;
 
 
 /**
- * レース情報ファイル
+ * レース情報
  */
-class FileRaceData
+class RaceData
 {
     /** レースID */
     public $raceId;
 
-    /** レース名 */
-    public $name;
+    /** 開催場 */
+    public $kaisai;
 
-    /** 発送時刻 */
+    /** レース名 */
+    public $raceName;
+
+    /** 出走時刻 */
     public $startingTime;
 
     /** 種類(1:芝、2:ダート、3:障害) */
@@ -26,25 +29,31 @@ class FileRaceData
     /** 向き(1:左、2:右) */
     public $direction = 0;
 
+    /** レース等級 */
+    public $raceGarade;
+
     /** 頭数 */
     public $horseCount;
 
-    /** レースクラス */
-    public $raceGarade;
+    /** レース情報 */
+    public $raceInfo;
 
-    /** 出馬情報配列 */
-    public array $shutsubaArray = [];
+    /** コースメモ */
+    public $courseMemo;
+
+    /** 競走馬情報配列 HorseData[] */
+    public array $horseArray = [];
 
     /** Jsonデータを設定 */
     public function setJsonData($json) {
         foreach($json as $key => $val){
             if(property_exists($this, $key)){
                 if(is_array($this->{$key})){
-                    if($key == "shutsubaArray"){
+                    if($key == "horseArray"){
                         foreach($val as $row) {
-                            $shutsuba = new ShutsubaInfo();
-                            $shutsuba->setJsonData($row);
-                            $this->{$key}[] = $shutsuba;
+                            $horse = new HorseData();
+                            $horse->setJsonData($row);
+                            $this->{$key}[] = $horse;
                         }
                     }
                 }else{

@@ -28,7 +28,7 @@ Route::middleware("is.pc")->group(function() {
         // レース詳細
         Route::controller(\App\Http\Controllers\RaceDetailController::class)->group(function() {
             Route::get("/detail/{race_id}", "index")->name("detail.index");
-            Route::post("/detail/scoring{race_id}", "scoring")->name("detail.scoring");
+            Route::post("/detail/scoring/{race_id}", "scoring")->name("detail.scoring");
         });
 
         // Chrome拡張機能

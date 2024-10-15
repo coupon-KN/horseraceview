@@ -1,7 +1,7 @@
 <?php
 namespace App\Util;
-use App\Models\ViewRaceData;
-use App\Models\ViewHorseData;
+use App\Models\RaceData;
+use App\Models\HorseData;
 
 
 /**
@@ -26,7 +26,7 @@ class HorseraceScoringUtil
         if (!NetkeibaUtil::existsRaceData($raceId)) {
             return response([], 200);
         }
-        $raceData = NetkeibaUtil::GetViewRaceData($raceId);
+        $raceData = NetkeibaUtil::GetRaceData($raceId);
 
         // 対象のレースランク
         $raceGarade = config("const.RACE_CLASS_RANK")[array_key_last(config("const.RACE_CLASS_RANK"))];
@@ -81,7 +81,7 @@ class HorseraceScoringUtil
     /**
      * 勝利した中で一番高いクラス等級
      */
-    private static function searchHighestRank(ViewHorseData $horse, $limitYmd = "") {
+    private static function searchHighestRank(HorseData $horse, $limitYmd = "") {
         $classRankArray = config("const.RACE_CLASS_RANK");
         $highestRank = $classRankArray[array_key_last($classRankArray)];
 
@@ -119,7 +119,7 @@ class HorseraceScoringUtil
     /**
      * 1年以内で勝った競馬場の等級
      */
-    private static function calcRaceTrackScore(ViewHorseData $horse) {
+    private static function calcRaceTrackScore(HorseData $horse) {
         $rankArray = array("num1" => 0, "win1" => 0, "num2" => 0, "win2" => 0, "num3" => 0, "win3" => 0);
         foreach($horse->recodeArray as $recode) {
             // 1年以内であること
@@ -160,7 +160,7 @@ class HorseraceScoringUtil
     /**
      * 1年以内で勝った距離ランク
      */
-    private static function calcDistanceScore(ViewRaceData $raceData, ViewHorseData $horse) {
+    private static function calcDistanceScore(RaceData $raceData, HorseData $horse) {
         $raceRank = 4;
         $raceRank = in_array($raceData->distance, HorseraceScoringUtil::$DISTANCE_RANK1) ? 1 : $raceRank;
         $raceRank = in_array($raceData->distance, HorseraceScoringUtil::$DISTANCE_RANK2) ? 2 : $raceRank;

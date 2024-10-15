@@ -7,9 +7,9 @@
 
     <div class="row m-2">
         <div class="col-12">
-            <a class="btn btn-link" href="#" onclick="changeMonth(this); return false;" data-sel-ym="{{ date('Ym', strtotime($targetDate . ' -1 Month')) }}">前の月</a>
+            <a class="btn btn-link" href="#" onclick="changeMonth(this); return false;" data-sel-ym="{{ $prevMonth }}">前の月</a>
             <span class="fs-5">{{ date("Y年m月", strtotime($targetDate)) }}</span>
-            <a class="btn btn-link" href="#" onclick="changeMonth(this); return false;" data-sel-ym="{{ date('Ym', strtotime($targetDate . ' +1 Month')) }}">次の月</a>
+            <a class="btn btn-link" href="#" onclick="changeMonth(this); return false;" data-sel-ym="{{ $nextMonth }}">次の月</a>
 
             {{ Form::open(['route' => 'calendar.index', 'method' => 'get', 'id' => 'frmChangeMonth']) }}
                 <input type="hidden" id="selYm" name="selYm" />

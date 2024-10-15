@@ -1,37 +1,36 @@
 <?php
 namespace App\Models;
-use App\Models\RaceHistory;
 use App\Models\ParentHorse;
+use App\Models\HorseHistory;
 
 
 /**
- * 競走馬情報ファイル
+ * 競走馬情報
  */
-class FileHorse
+class HorseData
 {
     /** 馬ID */
     public $horseId;
-
+    /** 枠番 */
+    public $waku;
+    /** 馬番 */
+    public $umaban;
     /** 名前 */
     public $name;
-
     /** 年齢 */
     public $age;
-
-    /** 通算レース数 */
-    public $raceTotal;
-
-    /** 1位数 */
-    public $rank1Count;
-
-    /** 2位数 */
-    public $rank2Count;
-
-    /** 3位数 */
-    public $rank3Count;
-
-    /** ランク外 */
-    public $rankEtcCount;
+    /** 斤量 */
+    public $kinryo;
+    /** 騎手 */
+    public $jockey;
+    /** 除外 */
+    public $isCancel;
+    /** 成績 */
+    public $recode;
+    /** 勝率 */
+    public $winRate;
+    /** 複勝率 */
+    public $podiumRate;
 
     /** 父親の情報 */
     public ParentHorse $dad;
@@ -46,32 +45,29 @@ class FileHorse
     /** 母方の祖母の情報 */
     public ParentHorse $mamSobo;
 
-    /** 成績 */
+    /** 履歴 TestHorseHistory */
     public array $recodeArray = [];
+
 
     /** Jsonデータを設定 */
     public function setJsonData($json) {
         foreach($json as $key => $val){
             if(property_exists($this, $key)){
-                switch($key){
-                    case "dad":
-                    case "dadSohu":
-                    case "dadSobo":
-                    case "mam":
-                    case "mamSohu":
-                    case "mamSobo":
-                        $this->{$key} = new ParentHorse();
-                        $this->{$key}->setJsonData($val);
-                        break;
-                    case "recodeArray":
+                if($key == "dad" || $key == "dadSohu" || $key == "dadSobo" || $key == "mam" || $key == "mamSohu" || $key == "mamSobo"){
+                    $parent = new ParentHorse();
+                    $parent->setJsonData($val);
+                    $this->{$key} = $parent;
+                }
+                elseif($key == "recodeArray"){
+                    if(is_array($this->{$key})){
                         foreach($val as $row) {
-                            $history = new RaceHistory();
+                            $history = new HorseHistory();
                             $history->setJsonData($row);
                             $this->{$key}[] = $history;
                         }
-                        break;
-                    default:
-                        $this->{$key} = $val;
+                    }
+                }else{
+                    $this->{$key} = $val;
                 }
             }
         }

@@ -4,7 +4,7 @@ namespace App\Models;
 /**
  * レース履歴情報格納クラス
  */
-class RaceHistory
+class HorseHistory
 {
     /** 日付 */
     public $date;

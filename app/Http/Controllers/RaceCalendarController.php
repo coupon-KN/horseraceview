@@ -2,7 +2,6 @@
 namespace App\Http\Controllers;
 use App\Util\NetkeibaUtil;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use phpQuery;
 
 
@@ -89,7 +88,7 @@ class RaceCalendarController extends Controller
                 $rtnData["data"][] = array(
                     "isExists" => true,
                     "raceId" => $raceData->raceId,
-                    "name" => $raceData->name,
+                    "name" => $raceData->raceName,
                     "startingTime" => $raceData->startingTime,
                     "distance" => config("const.GROUND_SHORT_NAME")[$raceData->groundType] . $raceData->distance . "m",
                     "horseCount" => $raceData->horseCount . "頭",
@@ -213,9 +212,6 @@ class RaceCalendarController extends Controller
         // 出馬情報
         if(NetkeibaUtil::existsRaceData($raceId)){
             $raceObj = NetkeibaUtil::getRaceData($raceId);
-            foreach($raceObj->shutsubaArray as $item){
-                NetkeibaUtil::DownloadHorseInfo($item->horseId);
-            }
         }
 
         // 返却
@@ -226,7 +222,7 @@ class RaceCalendarController extends Controller
             "startingTime" => $raceObj->startingTime,
             "distance" => config("const.GROUND_SHORT_NAME")[$raceObj->groundType] . $raceObj->distance . "m",
             "horseCount" => $raceObj->horseCount . "頭",
-            "name" => $raceObj->name,
+            "name" => $raceObj->raceName,
             "detailUrl" => route('detail.index', $raceObj->raceId)
         );
 

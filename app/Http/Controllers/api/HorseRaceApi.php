@@ -4,7 +4,6 @@ use App\Util\NetkeibaUtil;
 use App\Util\MobileLoginUtil;
 use App\Util\HorseraceScoringUtil;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 
 /**
@@ -49,11 +48,11 @@ class HorseRaceApi
         $rtnArr[] = ["id" => "", "name" => ""];
         if(count($scheList) > 0){
             foreach($scheList as $item){
-                for($i=1; $i<=$item->num; $i++){
-                    $raceId = $item->id . sprintf('%02d', $i);
+                for($i=1; $i<=$item["num"]; $i++){
+                    $raceId = $item["id"] . sprintf('%02d', $i);
                     if (NetkeibaUtil::existsRaceData($raceId)) {
-                        $raceObj = NetkeibaUtil::GetViewRaceData($raceId);
-                        $babaCode = substr($item->id, 4, 2);
+                        $raceObj = NetkeibaUtil::GetRaceData($raceId);
+                        $babaCode = substr($item["id"], 4, 2);
                         $name = config("const.BAMEI_NAME")[$babaCode] . " " . $i . "R";
                         $name .= " " . $raceObj->startingTime;
                         $name .= " " . $raceObj->raceName;
@@ -78,7 +77,7 @@ class HorseRaceApi
         $statusCode = 204;
         $rtnData = [];
         if (NetkeibaUtil::existsRaceData($raceId)) {
-            $raceObj = NetkeibaUtil::GetViewRaceData($raceId);
+            $raceObj = NetkeibaUtil::GetRaceData($raceId);
             $rtnData = json_encode($raceObj, JSON_UNESCAPED_UNICODE);
 
             foreach($raceObj->horseArray as $horse){
@@ -105,7 +104,7 @@ class HorseRaceApi
         $rtnObj = [];
         if(count($scheList) > 0){
             foreach($scheList as $val){
-                $rtnObj[] = ["key" => $val->id, "value" => $val->name];
+                $rtnObj[] = ["key" => $val["id"], "value" => $val["name"]];
             }
         }
         return response($rtnObj, 200);
@@ -125,7 +124,7 @@ class HorseRaceApi
         $rtnObj = [];
         if(count($scheList) > 0){
             foreach($scheList as $val){
-                $rtnObj[] = ["key" => $val->id, "value" => $val->name];
+                $rtnObj[] = ["key" => $val["id"], "value" => $val["name"]];
             }
         }
         return response($rtnObj, 200);
@@ -145,9 +144,9 @@ class HorseRaceApi
         $rtnObj = [];
         if($selRaceId != "" && count($scheList) > 0){
             foreach($scheList as $val){
-                if($val->id == $selRaceId){
-                    for($i=1; $i<=$val->num; $i++) {
-                        $raceId = $val->id . substr("00" . $i, -2);
+                if($val["id"] == $selRaceId){
+                    for($i=1; $i<=$val["num"]; $i++) {
+                        $raceId = $val["id"] . substr("00" . $i, -2);
                         $raceData = [
                             "id" => $raceId,
                             "name" => "",
@@ -156,7 +155,7 @@ class HorseRaceApi
                         // 取得済であるか？
                         if (NetkeibaUtil::existsRaceData($raceId)) {
                             $raceObj = NetkeibaUtil::getRaceData($raceId);
-                            $raceData["name"] = $raceObj->name;
+                            $raceData["name"] = $raceObj->raceName;
                             $raceData["status"] = 1;
                         }
                         $rtnObj[] = $raceData;
@@ -186,10 +185,7 @@ class HorseRaceApi
         $response = ["id" => $raceId, "name" => "", "status" => 0];
         if(NetkeibaUtil::existsRaceData($raceId)){
             $raceObj = NetkeibaUtil::getRaceData($raceId);
-            foreach($raceObj->shutsubaArray as $item){
-                NetkeibaUtil::DownloadHorseInfo($item->horseId);
-            }
-            $response["name"] = $raceObj->name;
+            $response["name"] = $raceObj->raceName;
             $response["status"] = 1;
         }
 

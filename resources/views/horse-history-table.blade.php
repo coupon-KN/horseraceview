@@ -38,9 +38,9 @@
     <table class="table-bordered tbl-history">
         <thead class="text-center">
             <tr>
-                <th width="80px">日付</th>
+                <th width="85px">日付</th>
                 <th width="60px">馬場</th>
-                <th width="35px">天気</th>
+                <th width="40px">天気</th>
                 <th width="35px">No</th>
                 <th width="200px">レース名</th>
                 <th width="35px">頭数</th>
@@ -66,7 +66,7 @@
             @foreach($horse->recodeArray as $rec)
             <tr>
                 <td class="text-center">{{ $rec->date }}</td>
-                <td class="ps-1">{{ $rec->baba }}</td>
+                <td class="text-center ps-1">{{ $rec->baba }}</td>
                 <td class="text-center">{{ $rec->tenki }}</td>
                 <td class="text-center">{{ $rec->raceNo }}</td>
                 <td class="ps-1">

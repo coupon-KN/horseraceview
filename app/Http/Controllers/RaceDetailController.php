@@ -21,7 +21,7 @@ class RaceDetailController extends Controller
 
         // レースIDを取得
         if (NetkeibaUtil::existsRaceData($raceId)) {
-            $raceObj = NetkeibaUtil::GetViewRaceData($raceId);
+            $raceObj = NetkeibaUtil::GetRaceData($raceId);
 
             $babaCode = substr($raceId, 4, 2);
             $raceNo = intval(substr($raceId, -2));

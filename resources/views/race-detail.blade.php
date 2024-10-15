@@ -7,61 +7,84 @@
 
     @if(!is_null($info))
         <div class="row m-2">
-            <div class="col-5">
-                <div>{{ $info->raceInfo }}</div>
+            <div class="col-6">
+                <div>{{ $info->raceInfo . " " . mb_convert_kana($info->raceGarade, "n") }}</div>
                 <div>{{ $info->courseMemo }}</div>
             </div>
             <div class="col-5 text-end mt-auto mb-0">
                 <a href="#" class="btn-tool btn-door" onclick="allOpenClick(this)" title="全て開く"></a>
-                @if(session(config("const.SESSION_ADMIN")) == "1")
-                        <a href="#" class="btn-tool btn-analysis" onclick="scoringClick()"></a>
-                @endif
                 <a href="#" class="btn-tool btn-blood blood-off" onclick="bloodClick(this)" title="血統"></a>
             </div>
 
-            <div class="col-10">
+            <div class="col-11">
                 <table class="table-bordered tbl-detail">
                     <thead class="text-center">
                         <th class="py-1" style="width:40px;" >枠</th>
                         <th class="py-1" style="width:40px;" >馬番</th>
                         <th class="py-1" style="width:40px;" >印</th>
-                        <th class="py-1" style="width:300px;" >馬名</th>
+                        <th class="py-1" style="width:300px;">馬名</th>
                         <th class="py-1" style="width:40px;" >性齢</th>
                         <th class="py-1" style="width:40px;" >斤量</th>
                         <th class="py-1" style="width:100px;">騎手</th>
                         <th class="py-1" style="width:100px;">成績</th>
                         <th class="py-1" style="width:60px;" >勝率</th>
                         <th class="py-1" style="width:60px;" >連帯率</th>
+                        <th class="py-1" style="width:70px;" >
+                            @if($centralFlg)
+                            <a href="#" onclick="scoringClick()">独自採点</a>
+                            @else
+                            工事中
+                            @endif
+                        </th>
                         <th class="py-1" style="width:auto;" >コメント</th>
                     </thead>
                     <tbody>
                     @foreach($info->horseArray as $h)
-                        <tr class="normal">
-                            <td class="py-2 text-center waku{{$h->waku}}">{{ $h->waku }}</td>
-                            <td class="py-2 text-center">{{ $h->umaban }}</td>
-                            <td class="text-center fs-4 mark-cell" data-index="{{$loop->index}}" onclick="markCellClick(this)"></td>
-                            <td class="py-2 ps-1" onclick="toggleRow(this)">{{ $h->name }}</td>
-                            <td class="py-2 text-center" onclick="toggleRow(this)">{{ $h->age }}</td>
-                            <td class="py-2 text-center" onclick="toggleRow(this)">{{ $h->kinryo }}</td>
-                            <td class="py-2 ps-1" onclick="toggleRow(this)">{{ $h->jockey }}</td>
-                            <td class="py-2 text-center" onclick="toggleRow(this)">{{ $h->recode }}</td>
-                            <td class="py-2 text-center" onclick="toggleRow(this)">{{ $h->winRate }}%</td>
-                            <td class="py-2 text-center" onclick="toggleRow(this)">{{ $h->podiumRate }}%</td>
-                            <td class="px-2">
-                                <input type="text" class="w-100 border-0 comment-cell" data-index="{{$loop->index}}" onChange="commentChange(this)">
-                            </td>
-                        </tr>
-                        <tr class="row-hidden">
-                            <td colspan="11" class="p-1" style="background-color:#dee2e6;">
-                                @include('horse-history-table', ['horse' => $h])
-                            </td>
-                        </tr>
+                        @if($h->isCancel)
+                            <tr class="deselect">
+                                <td class="py-2 text-center waku{{$h->waku}}">{{ $h->waku }}</td>
+                                <td class="py-2 text-center">{{ $h->umaban }}</td>
+                                <td class="text-center fs14" data-index="{{$loop->index}}">除外</td>
+                                <td class="py-2 ps-1">{{ $h->name }}</td>
+                                <td class="py-2 text-center">{{ $h->age }}</td>
+                                <td class="py-2 text-center">{{ $h->kinryo }}</td>
+                                <td class="py-2 ps-1">{{ $h->jockey }}</td>
+                                <td class="py-2 text-center">{{ $h->recode }}</td>
+                                <td class="py-2 text-center">{{ $h->winRate }}%</td>
+                                <td class="py-2 text-center">{{ $h->podiumRate }}%</td>
+                                <td class="py-2 text-center scoring{{$h->umaban}}"></td>
+                                <td class="px-2">
+                                    <input type="text" class="w-100 border-0 comment-cell" data-index="{{$loop->index}}" onChange="commentChange(this)">
+                                </td>
+                            </tr>
+                        @else
+                            <tr class="normal">
+                                <td class="py-2 text-center waku{{$h->waku}}">{{ $h->waku }}</td>
+                                <td class="py-2 text-center">{{ $h->umaban }}</td>
+                                <td class="text-center fs-4 mark-cell" data-index="{{$loop->index}}" onclick="markCellClick(this)"></td>
+                                <td class="py-2 ps-1" onclick="toggleRow(this)">{{ $h->name }}</td>
+                                <td class="py-2 text-center" onclick="toggleRow(this)">{{ $h->age }}</td>
+                                <td class="py-2 text-center" onclick="toggleRow(this)">{{ $h->kinryo }}</td>
+                                <td class="py-2 ps-1" onclick="toggleRow(this)">{{ $h->jockey }}</td>
+                                <td class="py-2 text-center" onclick="toggleRow(this)">{{ $h->recode }}</td>
+                                <td class="py-2 text-center" onclick="toggleRow(this)">{{ $h->winRate }}%</td>
+                                <td class="py-2 text-center" onclick="toggleRow(this)">{{ $h->podiumRate }}%</td>
+                                <td class="py-2 text-center scoring{{$h->umaban}}" onclick="toggleRow(this)"></td>
+                                <td class="px-2">
+                                    <input type="text" class="w-100 border-0 comment-cell" data-index="{{$loop->index}}" onChange="commentChange(this)">
+                                </td>
+                            </tr>
+                            <tr class="row-hidden">
+                                <td colspan="12" class="p-1" style="background-color:#dee2e6;">
+                                    @include('horse-history-table', ['horse' => $h])
+                                </td>
+                            </tr>
+                        @endif
                     @endforeach
                     </tbody>
                 </table>
             </div>
-            <div class="col-2">
-                <pre id="score" class="w-100 h-100 m-0"></pre>
+            <div class="col-1">
             </div>
 
         </div>
@@ -72,7 +95,7 @@
     @endif
 
     <input type="hidden" id="raceId" value="{{$raceid}}" />
-    <input type="hidden" id="urlScoringRace" value="{{route('api.race.scoring', $raceid)}}" />
+    <input type="hidden" id="urlScoringRace" value="{{route('detail.scoring', $raceid)}}" />
 @endsection
 
 
@@ -184,29 +207,27 @@
     async function scoringClick() {
         const url = document.getElementById("urlScoringRace").value;
         try {
-            const response = await fetch(url, {method:"POST"});
+            const response = await fetch(url, {method:"POST", headers:getHeaders()});
             if(response.ok){
-                const score = document.getElementById("score");
                 const json = await response.json();
                 console.log(json);
 
-                score.innerText = "";
                 let strScore = "";
                 for(let i=0; i<json.length; i++) {
-                    strScore += json[i].umaban + "番 " + json[i].name;
-                    strScore += "\n";
-                    strScore += "　" + json[i].class + "級";
-                    strScore += "\n";
-                    strScore += "　勝ち馬場等級：" + json[i].babaRank.rank1 + " - " + json[i].babaRank.rank2 + " - " + json[i].babaRank.rank3;
-                    strScore += "\n";
-                    strScore += "　距離適性率：" + json[i].distance;
-                    strScore += "\n";
+                    let td = document.getElementsByClassName("scoring" + json[i].umaban);
+                    td[0].innerText = json[i].score + "点";
                 }
-                score.innerText = strScore;
             }
         } catch (error) {
             console.log(error);
         }
+    }
+
+    function getHeaders(){
+        return {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Content-Type': 'application/json'
+        };
     }
 
 </script>
@@ -230,6 +251,10 @@
     .tbl-detail tr.delete input {
         background-color: #d0d0d0;
     }
+    .tbl-detail tr.deselect,
+    .tbl-detail tr.deselect input {
+        background-color: #a9a9a9;
+    }
     a.btn-tool {
         display: inline-block;
         background-position: center;
@@ -246,19 +271,12 @@
     a.blood-on {
         background-image: url(/img/bloodline-on.png);
     }
-    a.btn-analysis {
-        width: 29px;
-        height: 29px;
-        margin-right: 15px;
-        background-image: url(/img/analysis.png);
-    }
     a.btn-door {
         width: 29px;
         height: 29px;
         margin-right: 15px;
         background-image: url(/img/door.png);
     }
-
 
 </style>
 @endsection
