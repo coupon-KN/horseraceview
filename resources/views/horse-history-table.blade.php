@@ -43,6 +43,7 @@
                 <th width="40px">天気</th>
                 <th width="35px">No</th>
                 <th width="200px">レース名</th>
+                <th width="50px">格</th>
                 <th width="35px">頭数</th>
                 <th width="35px">枠番</th>
                 <th width="35px">馬番</th>
@@ -76,6 +77,7 @@
                         <a href="{{$rec->raceUrl}}" target="_blank">{{ $rec->raceName }}</a>
                     @endif
                 </td>
+                <td class="text-center">{{ $rec->raceGrade }}</td>
                 <td class="text-center">{{ $rec->horseCount }}</td>
                 <td class="text-center">{{ $rec->waku }}</td>
                 <td class="text-center">{{ $rec->umaban }}</td>

@@ -29,12 +29,19 @@ Route::middleware("is.pc")->group(function() {
         Route::controller(\App\Http\Controllers\RaceDetailController::class)->group(function() {
             Route::get("/detail/{race_id}", "index")->name("detail.index");
             Route::post("/detail/scoring/{race_id}", "scoring")->name("detail.scoring");
+            Route::post("/detail/comment", "writeComment")->name("detail.comment");
         });
 
         // Chrome拡張機能
         Route::controller(\App\Http\Controllers\ExtensionController::class)->group(function() {
             Route::get("/extension", "index")->name("extension");
             Route::get("/extension/download", "download")->name("extension.download");
+        });
+
+        // パスワード変更
+        Route::controller(\App\Http\Controllers\PasswordChangeController::class)->group(function() {
+            Route::get("/password", "index")->name("passchg");
+            Route::post("/password", "reset")->name("passchg.reset");
         });
 
     });

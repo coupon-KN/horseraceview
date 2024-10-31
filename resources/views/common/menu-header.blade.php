@@ -11,22 +11,17 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{route('calendar.index')}}">レースカレンダー</a>
                     </li>
-                    {{--
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="adminDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">管理</a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminDropdownMenuLink">
-                            <li><a class="dropdown-item" href="{{route('setting.raceload')}}">レース情報の取得</a></li>
-                        </ul>
-                    </li>
-                    --}}
                     <li class="nav-item">
                         <a class="nav-link" href="{{route('extension')}}">Chrome拡張機能</a>
                     </li>
                     <li class="nav-item dropdown ms-4">
                         <a class="nav-link dropdown-toggle" href="#" id="loginUserDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            {{ session(config('const.SESSION_LOGIN_USER')) }}さん
+                            {{ session(config('const.SESSION_LOGIN_USER_NAME')) }}さん
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="loginUserDropdownMenuLink">
+                            <li>
+                                <a class="dropdown-item" href="{{route('passchg')}}">パスワード変更</a>
+                            </li>
                             <li>
                                 {{ Form::open(['route' => 'logout', 'method' => 'post', 'name' => 'frmLogout']) }}
                                 <a class="dropdown-item" href="javascript:frmLogout.submit()">ログアウト</a>

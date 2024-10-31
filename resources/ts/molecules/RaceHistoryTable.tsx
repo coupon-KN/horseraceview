@@ -41,7 +41,7 @@ const RaceHistoryTable = (props : Props) => {
                 <div key={index} className={"row m-0 border fs12 rank" + h.rankNo + (index < DISP_ROW_CNT ? "" : " more-row")}>
                     <div className="col-4 p-1">
                         <div>{h.date}</div>
-                        <div>{h.baba}</div>
+                        <div>{h.baba}{(h.raceGrade != "" ? "  " + h.raceGrade : "")}</div>
                         <div><a href={h.raceUrl} target='_blank'>{h.raceName}</a></div>
                         <div>{h.groundShortName + h.distance + " " + h.condition}</div>
                     </div>

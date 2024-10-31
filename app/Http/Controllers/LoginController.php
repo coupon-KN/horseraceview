@@ -13,11 +13,13 @@ class LoginController extends Controller
      * 初期表示
      */
     function index(Request $request) {
-        if($request->session()->exists(config("const.SESSION_LOGIN_USER"))){
+        if($request->session()->exists(config("const.SESSION_LOGIN_USER_NO"))){
             return redirect()->route('calendar.index'); 
         }
 
-        return view("login", []);
+        $viewData['system_msg'] = $request->session()->get(config('const.SYSTEM_MSG'));
+
+        return view("login", $viewData);
     }
 
     /**
@@ -30,8 +32,9 @@ class LoginController extends Controller
 
         $users = json_decode(Storage::disk("public")->get("users.json"), true);
         foreach($users as $val){
-            if($userId == $val["user_id"] && $passWd == $val["password"]){
-                $request->session()->put(config("const.SESSION_LOGIN_USER"), $val["name"]);
+            if($userId == $val["login_id"] && $passWd == $val["password"]){
+                $request->session()->put(config("const.SESSION_LOGIN_USER_NO"), $val["user_no"]);
+                $request->session()->put(config("const.SESSION_LOGIN_USER_NAME"), $val["name"]);
                 if($val["admin"]){
                     $request->session()->put(config("const.SESSION_ADMIN"), "1");
                 }

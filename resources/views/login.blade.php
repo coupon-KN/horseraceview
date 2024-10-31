@@ -12,6 +12,10 @@
             <img src="/img/pcbg_icon.png" alt="" />
         </header>
         <div class="mx-auto" style="width:300px;">
+            @if(!is_null($system_msg))
+                <div class="mt-3 text-success">{{ $system_msg }}</div>
+            @endif
+
             {{ Form::open(['route' => 'login.login', 'method' => 'post']) }}
             <div class="pt-4">
                 <label class="form-label w-100">ID

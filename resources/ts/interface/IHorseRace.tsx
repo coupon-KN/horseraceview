@@ -49,6 +49,8 @@ export interface IViewHorseData {
     name : string;
     /** 年齢 */
     age : string;
+    /** 斤量 */
+    kinryo : string;
     /** 騎手 */
     jockey : string;
     /** 除外フラグ */
@@ -59,6 +61,8 @@ export interface IViewHorseData {
     winRate : string;
     /** 複勝率 */
     podiumRate : string;
+    /** ユーザーコメント */
+    userComment : string;
 
     /** 父親の情報 */
     dad : IParentHorse;
@@ -89,6 +93,8 @@ export interface IRaceHistory {
     raceNo : number;
     /** レース名 */
     raceName : string;
+    /** レースグレード */
+    raceGrade : string;
     /** レースURL */
     raceUrl : string;
     /** 頭数 */
@@ -177,7 +183,8 @@ export interface ISettingScheduleItem {
 
 // スコアデータ
 export interface IScoringItem {
-    umaban : number;
+    id : string;
     name : string;
+    umaban : number;
     score : number;
 }

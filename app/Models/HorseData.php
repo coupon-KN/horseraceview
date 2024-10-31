@@ -27,10 +27,14 @@ class HorseData
     public $isCancel;
     /** 成績 */
     public $recode;
+    /** 獲得賞金 */
+    public $totalPrize;
     /** 勝率 */
     public $winRate;
     /** 複勝率 */
     public $podiumRate;
+    /** ユーザーコメント */
+    public $userComment = "";
 
     /** 父親の情報 */
     public ParentHorse $dad;

@@ -9,7 +9,8 @@
   <link rel="stylesheet" href="{{ asset('/style.css') }}">
   @yield('pageCss')
   <link href="https://fonts.googleapis.com/earlyaccess/nicomoji.css" rel="stylesheet">
-  <script src="{{ asset('/lib/bootstrap/js/bootstrap.bundle.min.js') }}" ></script>
+  <script src="{{ asset('/lib/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+  <script src="{{ asset('/common.js') }}"></script>
   @yield('pageJs')
 </head>
 <body>

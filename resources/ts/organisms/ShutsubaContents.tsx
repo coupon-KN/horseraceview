@@ -24,6 +24,7 @@ const ShutsubaContents = (props:Props) => {
     const [scoreArray, setScoreArray] = useState<string[]>([]);
     const [openRowArray, setOpenRowArray] = useState<boolean[]>([]);
     const [isBloodline, setIsBloodline] = useState(false);
+    const [isComment, setIsComment] = useState(false);
 
 
     React.useEffect(() => {
@@ -271,6 +272,7 @@ const ShutsubaContents = (props:Props) => {
                                             <div className="d-inline-block w-25 fs12">{h.age}</div>
                                             <div className="d-inline-block w-100 fs12">
                                                 <span>{h.jockey}</span>
+                                                <span>({h.kinryo})</span>
                                                 <span className="float-end">{h.recode}&nbsp;&nbsp;勝{h.winRate}%&nbsp;&nbsp;複勝{h.podiumRate}%</span>
                                             </div>
                                         </td>
@@ -286,10 +288,16 @@ const ShutsubaContents = (props:Props) => {
                                             <div className="d-inline-block w-25 fs12">{h.age + "　" + (scoreArray[index])}</div>
                                             <div className="d-inline-block w-100 fs12">
                                                 <span>{h.jockey}</span>
+                                                <span>({h.kinryo})</span>
                                                 <span className="float-end">{h.recode}&nbsp;&nbsp;勝{h.winRate}%&nbsp;&nbsp;複勝{h.podiumRate}%</span>
                                             </div>
                                         </td>
                                     </tr>
+                                    {isComment && h.userComment != '' ?
+                                    <tr key={self.crypto.randomUUID()}>
+                                        <td colSpan={4} className="px-2 bg-light">{h.userComment}</td>
+                                    </tr>
+                                    : ""}
                                     <tr key={self.crypto.randomUUID()} className={openRowArray[index] ? "open" : "close"}>
                                         <td colSpan={4} className="ps-2 bg-light">
                                             {isBloodline ? <ParentHorseCell horseData={h} /> : ""}
@@ -309,6 +317,7 @@ const ShutsubaContents = (props:Props) => {
                 <a className={"btn-bloodline " + (isBloodline ? "bloodline-on" : "bloodline-off")} onClick={() => setIsBloodline(!isBloodline)}></a>
                 <a className="btn-door" onClick={AllOpenClickHandle}></a>
                 <a className="btn-analysis" onClick={ScoringClickHandle}></a>
+                <a className={"btn-comment " + (isComment ? "comment-on" : "comment-off")} onClick={() => setIsComment(!isComment)}></a>
             </footer>
         </div>
     );

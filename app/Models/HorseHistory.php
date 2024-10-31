@@ -21,6 +21,9 @@ class HorseHistory
     /** レース名 */
     public $raceName;
 
+    /** レースグレード */
+    public $raceGrade = "";
+
     /** レースURL */
     public $raceUrl;
 

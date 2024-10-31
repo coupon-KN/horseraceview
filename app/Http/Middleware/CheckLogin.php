@@ -15,7 +15,7 @@ class CheckLogin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if($request->session()->exists(config("const.SESSION_LOGIN_USER"))){
+        if($request->session()->exists(config("const.SESSION_LOGIN_USER_NO"))){
             return $next($request);
         }
 

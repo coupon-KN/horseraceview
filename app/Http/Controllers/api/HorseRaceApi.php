@@ -4,6 +4,7 @@ use App\Util\NetkeibaUtil;
 use App\Util\MobileLoginUtil;
 use App\Util\HorseraceScoringUtil;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 
 /**
@@ -78,13 +79,28 @@ class HorseRaceApi
         $rtnData = [];
         if (NetkeibaUtil::existsRaceData($raceId)) {
             $raceObj = NetkeibaUtil::GetRaceData($raceId);
-            $rtnData = json_encode($raceObj, JSON_UNESCAPED_UNICODE);
 
+            // 履歴を10件に削除
             foreach($raceObj->horseArray as $horse){
                 if(count($horse->recodeArray) > 0){
                     $horse->recodeArray = array_splice($horse->recodeArray, 0, 10);
                 }
             }
+            // ユーザのメモ情報を取得
+            $loginUserNo = MobileLoginUtil::getLoginUserInfo($request->cookie("chestnut-token"))["user_no"];
+            if (Storage::disk('public')->exists("user_data/" . $loginUserNo . ".json")) {
+                $userData = json_decode(Storage::disk('public')->get("user_data/" . $loginUserNo . ".json"), true);
+                if(array_key_exists($raceId, $userData)) {
+                    for($i=0; $i<count($raceObj->horseArray); $i++) {
+                        $horse = $raceObj->horseArray[$i];
+                        if(array_key_exists($horse->horseId, $userData[$raceId])) {
+                            $horse->userComment = $userData[$raceId][$horse->horseId]["comment"];
+                        }
+                    }
+                }
+            }
+
+            $rtnData = json_encode($raceObj, JSON_UNESCAPED_UNICODE);
             $statusCode = 200;
         }
 

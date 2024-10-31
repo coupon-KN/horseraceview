@@ -117,11 +117,14 @@ return [
     'LOGIN_USER' => '72309c04a625438463229aee18f3d336b34ce46b1663cb294620b747d0e08147',
     'LOGIN_PASS' => '00addb6bb85a52346e8f93f32644a17cd3e9e273b01cd097c9e51845c9896594',
 
-    'SESSION_LOGIN_USER' => 'LOGIN_USER',
+    'SESSION_LOGIN_USER_NO' => 'LOGIN_USER_NO',
+    'SESSION_LOGIN_USER_NAME' => 'LOGIN_USER_NAME',
     'SESSION_ADMIN' => 'ADMIN_USER',
 
     'JRA_MOVIE_PAGE' => 'https://www.jra.go.jp/error/error013.html?raceid={raceid}',
     'REGION_MOVIE_PAGE' => 'https://keiba-lv-st.jp/movie/player?track={track}&date={date}&race={raceno}',
+
+    'SYSTEM_MSG' => 'system_msg',
 
 
     'default' => env('CACHE_DRIVER', 'file')

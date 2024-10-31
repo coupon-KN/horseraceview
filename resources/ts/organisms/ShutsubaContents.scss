@@ -77,5 +77,16 @@
         height: 30px;
         background-image: url("/img/analysis.png");
     }
+    a.btn-comment {
+        left: 230px;
+        width: 30px;
+        height: 30px;
+    }
+    .comment-off {
+        background-image: url("/img/comment-off.png");
+    }
+    .comment-on {
+        background-image: url("/img/comment-on.png");
+    }
     
 }

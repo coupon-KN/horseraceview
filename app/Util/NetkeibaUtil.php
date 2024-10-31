@@ -148,6 +148,20 @@ class NetkeibaUtil
                 NetkeibaUtil::DownloadHorseInfo($horse);
                 $raceData->horseArray[] = $horse;
             }
+
+            // レース情報
+            $raceData->raceInfo = $raceData->startingTime . "発走 ";
+            $raceData->raceInfo .= config("const.GROUND_NAME")[$raceData->groundType];
+            $raceData->raceInfo .= $raceData->distance . "m";
+            $raceData->raceInfo .= "("  . config("const.DIRECTION_NAME")[$raceData->direction] . ") ";
+            $raceData->raceInfo .= $raceData->horseCount . "頭";
+            // メモ情報
+            $babaCode = substr($raceId, 4, 2);
+            if(array_key_exists($babaCode, config("const.BABA_MEMO"))){
+                if(array_key_exists($raceData->distance, config("const.BABA_MEMO")[$babaCode])){
+                    $raceData->courseMemo = config("const.BABA_MEMO")[$babaCode][$raceData->distance];
+                }
+            }
         }
         catch(\Exception $err){
             return null;
@@ -200,6 +214,10 @@ class NetkeibaUtil
                         $horseData->winRate = 0;
                         $horseData->podiumRate = 0;
                     }
+                }elseif($th == "獲得賞金"){
+                    $strWork = $profTable->find("tr:eq(". $i . ") td")->text();
+                    $strWork = str_replace(" ", "", trim($strWork));
+                    $horseData->totalPrize = str_replace("/", "\n", trim($strWork));
                 }
             }
 
@@ -299,6 +317,8 @@ class NetkeibaUtil
                             $raceUrl = str_replace("{date}", date("Ymd", strtotime($history->date)), $raceUrl);
                             $raceUrl = str_replace("{raceno}", substr("00" . $history->raceNo, -2), $raceUrl);
                             $history->raceUrl = $raceUrl;
+
+                            $history->raceGrade = RegionRaceGradeUtil::getInstance()->getRaceGrade($history->date, $babaCode, $history->raceNo);
                         }
                     }
                 }
@@ -435,7 +455,21 @@ class NetkeibaUtil
                 NetkeibaUtil::DownloadHorseInfo($horse);
                 $raceData->horseArray[] = $horse;
             }
-        }
+ 
+            // レース情報
+            $raceData->raceInfo = $raceData->startingTime . "発走 ";
+            $raceData->raceInfo .= config("const.GROUND_NAME")[$raceData->groundType];
+            $raceData->raceInfo .= $raceData->distance . "m";
+            $raceData->raceInfo .= "("  . config("const.DIRECTION_NAME")[$raceData->direction] . ") ";
+            $raceData->raceInfo .= $raceData->horseCount . "頭";
+            // メモ情報
+            $babaCode = substr($raceId, 4, 2);
+            if(array_key_exists($babaCode, config("const.BABA_MEMO"))){
+                if(array_key_exists($raceData->distance, config("const.BABA_MEMO")[$babaCode])){
+                    $raceData->courseMemo = config("const.BABA_MEMO")[$babaCode][$raceData->distance];
+                }
+            }
+       }
         catch(\Exception $err){
             return null;
         }

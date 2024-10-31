@@ -29,6 +29,7 @@
                         <th class="py-1" style="width:100px;">成績</th>
                         <th class="py-1" style="width:60px;" >勝率</th>
                         <th class="py-1" style="width:60px;" >連帯率</th>
+                        <th class="py-1" style="width:100px;" >獲得賞金</th>
                         <th class="py-1" style="width:70px;" >
                             @if($centralFlg)
                             <a href="#" onclick="scoringClick()">独自採点</a>
@@ -52,9 +53,10 @@
                                 <td class="py-2 text-center">{{ $h->recode }}</td>
                                 <td class="py-2 text-center">{{ $h->winRate }}%</td>
                                 <td class="py-2 text-center">{{ $h->podiumRate }}%</td>
-                                <td class="py-2 text-center scoring{{$h->umaban}}"></td>
+                                <td class="py-2 text-center fs12">{!! nl2br($h->totalPrize) !!}</td>
+                                <td class="py-2 text-center score{{$h->horseId}}"></td>
                                 <td class="px-2">
-                                    <input type="text" class="w-100 border-0 comment-cell" data-index="{{$loop->index}}" onChange="commentChange(this)">
+                                    <input type="text" class="w-100 border-0 comment-cell" data-horse-id="{{$h->horseId}}" onChange="commentChange(this)" value="{{$h->userComment}}">
                                 </td>
                             </tr>
                         @else
@@ -69,13 +71,14 @@
                                 <td class="py-2 text-center" onclick="toggleRow(this)">{{ $h->recode }}</td>
                                 <td class="py-2 text-center" onclick="toggleRow(this)">{{ $h->winRate }}%</td>
                                 <td class="py-2 text-center" onclick="toggleRow(this)">{{ $h->podiumRate }}%</td>
-                                <td class="py-2 text-center scoring{{$h->umaban}}" onclick="toggleRow(this)"></td>
+                                <td class="py-2 text-center fs12" onclick="toggleRow(this)">{!! nl2br($h->totalPrize) !!}</td>
+                                <td class="py-2 text-center score{{$h->horseId}}" onclick="toggleRow(this)"></td>
                                 <td class="px-2">
-                                    <input type="text" class="w-100 border-0 comment-cell" data-index="{{$loop->index}}" onChange="commentChange(this)">
+                                    <input type="text" class="w-100 border-0 comment-cell" data-horse-id="{{$h->horseId}}" onChange="commentChange(this)" value="{{$h->userComment}}">
                                 </td>
                             </tr>
                             <tr class="row-hidden">
-                                <td colspan="12" class="p-1" style="background-color:#dee2e6;">
+                                <td colspan="13" class="p-1" style="background-color:#dee2e6;">
                                     @include('horse-history-table', ['horse' => $h])
                                 </td>
                             </tr>
@@ -96,34 +99,25 @@
 
     <input type="hidden" id="raceId" value="{{$raceid}}" />
     <input type="hidden" id="urlScoringRace" value="{{route('detail.scoring', $raceid)}}" />
+    <input type="hidden" id="urlComment" value="{{route('detail.comment')}}" />
 @endsection
 
 
 @section('pageJs')
 <script type="text/javascript">
+    const COOKIE_AGE = String(60 * 60 * 24 * 3);
+
     window.onload = function() {
         let raceId = document.getElementById("raceId").value;
 
         const markCells = document.getElementsByClassName("mark-cell");
         for(let i=0; i<markCells.length; i++) {
-            let val = getMarkCookie("mark" + raceId + markCells[i].dataset.index);
-            if(val.length > 0){
-                markCells[i].innerText = val;
-                const parentRow = markCells[i].parentElement;
-                if(val == "消"){
-                    parentRow.className = parentRow.className.replace("normal", "delete");
-                }
+            markCells[i].innerText = getCookie("mark" + raceId + markCells[i].dataset.index);
+            if(markCells[i].innerText == "消"){
+                let parentRow = markCells[i].parentElement;
+                parentRow.className = parentRow.className.replace("normal", "delete");
             }
         }
-
-        const commentCells = document.getElementsByClassName("comment-cell");
-        for(let i=0; i<commentCells.length; i++) {
-            let val = getMarkCookie("com" + raceId + commentCells[i].dataset.index);
-            if(val.length > 0){
-                commentCells[i].value = val;
-            }
-        }
-
     }
 
     function toggleRow(e){
@@ -148,7 +142,7 @@
         
         // マーク保存
         let raceId = document.getElementById("raceId").value;
-        saveMarkCookie("mark" + raceId + cell.dataset.index, cell.innerText);
+        setCookie("mark" + raceId + cell.dataset.index, cell.innerText, COOKIE_AGE);
 
         // 背景制御
         const parentRow = cell.parentElement;
@@ -160,28 +154,14 @@
     }
 
     function commentChange(comment) {
-        // コメント保存
-        let raceId = document.getElementById("raceId").value;
-        saveMarkCookie("com" + raceId + comment.dataset.index, comment.value);
-    }
-
-    function getMarkCookie(cookieName) {
-        let cookies = document.cookie;
-        let rtnContent = "";
-        if(cookies != ""){
-            cookies.split(';').forEach(function(value) {
-                let keyVal = value.trim().split('=');
-                if(keyVal[0] == cookieName){
-                    rtnContent = keyVal[1];
-                    return;
-                }
-            });
-        }
-        return rtnContent;
-    }
-
-    function saveMarkCookie(name, value) {
-        document.cookie = name + "=" + value + "; max-age=259200";
+        const url = document.getElementById("urlComment").value;
+        const addHeader = {'Content-Type': 'application/json'};
+        const bodyData = JSON.stringify({
+            race_id : document.getElementById("raceId").value,
+            horse_id : comment.dataset.horseId,
+            comment : comment.value
+        });
+        asyncPost(url, addHeader, bodyData, () => {});
     }
 
     function bloodClick(e) {
@@ -205,31 +185,23 @@
     }
 
     async function scoringClick() {
-        const url = document.getElementById("urlScoringRace").value;
         try {
-            const response = await fetch(url, {method:"POST", headers:getHeaders()});
-            if(response.ok){
+            const url = document.getElementById("urlScoringRace").value;
+            const addHeader = {'Content-Type': 'application/json'};
+            asyncPost(url, addHeader, null, async(response) => {
                 const json = await response.json();
                 console.log(json);
 
                 let strScore = "";
                 for(let i=0; i<json.length; i++) {
-                    let td = document.getElementsByClassName("scoring" + json[i].umaban);
+                    let td = document.getElementsByClassName("score" + json[i].id);
                     td[0].innerText = json[i].score + "点";
                 }
-            }
+            });
         } catch (error) {
             console.log(error);
         }
     }
-
-    function getHeaders(){
-        return {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-            'Content-Type': 'application/json'
-        };
-    }
-
 </script>
 @endsection
 

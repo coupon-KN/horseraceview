@@ -35,7 +35,7 @@
                         @else
                             <td @if($day==date('Y-m-d')) class="today" @endif>
                                 <span>{{ date("j", strtotime($day)) }}</span>
-                                <a href="#" class="float-end" style="font-size: 0.7em;" onclick="kickScrapingSchedule(this); return false;" data-target-date="{{$day}}" title="開催情報取得">
+                                <a href="#" class="float-end" style="font-size: 0.7em;" onclick="downloadSchedule(this); return false;" data-target-date="{{$day}}" title="開催情報取得">
                                     <img src="/img/download.png" alt="取得" />
                                 </a>
                                 <div>
@@ -74,7 +74,7 @@
     <input type="hidden" id="urlRaceDetail" value="{{ route('detail.index', 'dummy') }}" />
     <input type="hidden" id="urlKickRaceData" value="{{ route('calendar.kick.racedata') }}" />
     <img src="/img/spinner.gif" style="display:none" />
-    {{ Form::open(['route' => 'calendar.get.schedule', 'method' => 'post', 'id' => 'frmScrapingSchedule']) }}
+    {{ Form::open(['route' => 'calendar.get.schedule', 'method' => 'post', 'id' => 'frmDownloadSchedule']) }}
         <input type="hidden" id="selDate" name="sel_date" />
     {{ Form::close() }}
 
@@ -88,24 +88,17 @@
         document.getElementById("frmChangeMonth").submit();
     }
 
-    function kickScrapingSchedule(e) {
+    function downloadSchedule(e) {
         document.getElementById("selDate").value = e.dataset.targetDate;
-        document.getElementById("frmScrapingSchedule").submit();
-    }
-
-    function getHeaders(){
-        return {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-            'Content-Type': 'application/json'
-        };
+        document.getElementById("frmDownloadSchedule").submit();
     }
 
     async function getRaceInfo(e) {
-        const url = document.getElementById("urlGetRaceInfo").value;
-        const reqData = {sel_date : e.dataset.targetDate, race_id : e.dataset.raceId};
         try {
-            const response = await fetch(url, {method:"POST", headers:getHeaders(), body:JSON.stringify(reqData)});
-            if(response.ok){
+            const url = document.getElementById("urlGetRaceInfo").value;
+            const addHeader = {'Content-Type': 'application/json'};
+            const bodyData = JSON.stringify({sel_date : e.dataset.targetDate, race_id : e.dataset.raceId});
+            asyncPost(url, addHeader, bodyData, async(response) => {
                 const json = await response.json();
                 const detailBlock = document.getElementById("raceDetail");
                 detailBlock.innerHTML = json.view;
@@ -114,66 +107,59 @@
                 // ボタンを登録
                 const btnRaceArr = document.getElementsByClassName("race-scraping");
                 for(let i=0; i<btnRaceArr.length; i++) {
-                    btnRaceArr[i].onclick = kickScrapingRaceDara;
+                    btnRaceArr[i].onclick = downloadRaceData;
                 }
                 const btnBulkArr = document.getElementsByClassName("bulk-scraping");
                 for(let i=0; i<btnBulkArr.length; i++) {
-                    btnBulkArr[i].onclick = bulkScrapingRaceDara;
+                    btnBulkArr[i].onclick = bulkDownloadRaceData;
                 }
-
-            }
+            });
         } catch (error) {
             console.log(error);
         }
     }
 
-    async function kickScrapingRaceDara(e){
-        const tr = e.currentTarget.parentElement.parentElement;
-        const div = document.createElement("div");
-        div.className = "waiting";
-        tr.getElementsByTagName("td")[4].innerText = "";
-        tr.getElementsByTagName("td")[4].append(div);
-        await callScrapingRaceData(e.currentTarget.dataset.raceId);
+    async function downloadRaceData(e){
+        let tr = e.currentTarget.parentElement.parentElement;
+        let raceId = e.currentTarget.dataset.raceId;
+        await callScrapingRaceData(tr, raceId);
     }
-    async function bulkScrapingRaceDara(e){
+    async function bulkDownloadRaceData(e){
         const btnRaceArr = document.getElementsByClassName("race-scraping");
         for(let i=0; i<btnRaceArr.length; i++) {
-            const tr = document.getElementById("raceDetail").getElementsByTagName("tr")[i];
-            const div = document.createElement("div");
-            div.className = "waiting";
-            tr.getElementsByTagName("td")[4].innerText = "";
-            tr.getElementsByTagName("td")[4].append(div);
-            await callScrapingRaceData(btnRaceArr[i].dataset.raceId);
+            let tr = document.getElementById("raceDetail").getElementsByTagName("tr")[i];
+            let raceId = btnRaceArr[i].dataset.raceId;
+            await callScrapingRaceData(tr, raceId);
         }
     }
+    async function callScrapingRaceData(tblRow, raceId) {
+        let waitingDiv = document.createElement("div");
+        waitingDiv.className = "waiting";
+        tblRow.getElementsByTagName("td")[4].innerText = "";
+        tblRow.getElementsByTagName("td")[4].append(waitingDiv);
 
-    async function callScrapingRaceData(raceId) {
-        const url = document.getElementById("urlKickRaceData").value;
-        const reqData = {race_id : raceId};
         try {
-            const response = await fetch(url, {method:"POST", headers:getHeaders(), body:JSON.stringify(reqData)});
-            if(response.ok){
+            const url = document.getElementById("urlKickRaceData").value;
+            const addHeader = {'Content-Type': 'application/json'};
+            const bodyData = JSON.stringify({race_id : raceId});
+            await asyncPost(url, addHeader, bodyData, async(response) => {
                 const json = await response.json();
                 console.log(json);
 
-                const trArr = document.getElementById("raceDetail").getElementsByTagName("tr");
-                const tr = trArr[json.data.raceNo - 1];
-
                 let anchor = document.createElement("a");
-                tr.getElementsByTagName("td")[1].innerText = json.data.startingTime;
-                tr.getElementsByTagName("td")[2].innerText = json.data.distance;
-                tr.getElementsByTagName("td")[3].innerText = json.data.horseCount;
-                tr.getElementsByTagName("td")[4].innerText = "";
+                tblRow.getElementsByTagName("td")[1].innerText = json.data.startingTime;
+                tblRow.getElementsByTagName("td")[2].innerText = json.data.distance;
+                tblRow.getElementsByTagName("td")[3].innerText = json.data.horseCount;
+                tblRow.getElementsByTagName("td")[4].innerText = "";
                 anchor.href = json.data.detailUrl;
                 anchor.target = "_blank";
                 anchor.text = json.data.name;
-                tr.getElementsByTagName("td")[4].append(anchor);
-            }
+                tblRow.getElementsByTagName("td")[4].append(anchor);
+            });
         } catch (error) {
             console.log(error);
         }
     }
-
 
 </script>
 @endsection

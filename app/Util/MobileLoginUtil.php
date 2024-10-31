@@ -21,10 +21,10 @@ class MobileLoginUtil
         $tokenArr = json_decode(Storage::disk("public")->get("token.json"), true);
         $userArr = json_decode(Storage::disk("public")->get("users.json"), true);
         foreach($userArr as $val){
-            if($hashUser == $val["user_id"] && $hashPass == $val["password"]){
+            if($hashUser == $val["login_id"] && $hashPass == $val["password"]){
                 $rtnToken = (string) Uuid::uuid4();
                 $tokenArr[$rtnToken] = array(
-                    "user_id" => $hashUser,
+                    "login_id" => $hashUser,
                     "limit" => (new DateTime('+2 hour'))->format("Y-m-d H:i:s")
                 );
                 break;
@@ -87,11 +87,11 @@ class MobileLoginUtil
         $rtnArr = null;
         $tokenArr = json_decode(Storage::disk("public")->get("token.json"), true);
         if (array_key_exists($token, $tokenArr)) {
-            $userId = $tokenArr[$token]["user_id"];
+            $userId = $tokenArr[$token]["login_id"];
 
             $userArr = json_decode(Storage::disk("public")->get("users.json"), true);
             foreach($userArr as $val){
-                if($val["user_id"] == $userId){
+                if($val["login_id"] == $userId){
                     $rtnArr = $val;
                     break;
                 }

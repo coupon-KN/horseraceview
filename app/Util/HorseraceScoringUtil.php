@@ -9,9 +9,9 @@ use App\Models\HorseData;
  */
 class HorseraceScoringUtil
 {
-    private static $BABA_RANK1 = ['01', '05', '06', '08', '09'];
-    private static $BABA_RANK2 = ['02', '04', '07'];
-    private static $BABA_RANK3 = ['03', '10'];
+    private static $BABA_RANK1 = ['01', '05', '06', '08', '09'];    // 札幌、東京、中山、京都、阪神
+    private static $BABA_RANK2 = ['02', '04', '07'];                // 函館、新潟、中京
+    private static $BABA_RANK3 = ['03', '10'];                      // 福島、小倉
     private static $DISTANCE_RANK1 = [2000];
     private static $DISTANCE_RANK2 = [1600, 2400];
     private static $DISTANCE_RANK3 = [1200, 2500];
@@ -68,8 +68,9 @@ class HorseraceScoringUtil
             $score = ceil($highestRankScore * 0.15 + $highestRankYearScore * 0.35 + $raceTrackScore * 0.2 + $distanceScore * 0.3);
 
             $returnArr[] = array(
-                "umaban" => $horse->umaban,
+                "id" => $horse->horseId,
                 "name" => $horse->name,
+                "umaban" => $horse->umaban,
                 "score" => $score,
             );
         }
